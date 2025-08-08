@@ -12,7 +12,29 @@
             background: #f9f9f9;
             color: #333;
         }
-        h1 {
+        header {
+            background-color: #0055a5;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: bold;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        h1.page-title {
             text-align: center;
             margin-bottom: 40px;
             color: #0055a5;
@@ -50,16 +72,26 @@
     </style>
 </head>
 <body>
-    <h1>Новости Техподдержки Метро New</h1>
+    <header>
+        <h1>Поддржка Метро New</h1>
+        <nav>
+            <a href="index.html">Главная</a>
+            <a href="apply.html">Подать заявку</a>
+            <a href="news.html">Новости</a>
+            <a href="contacts.html">Контакты</a>
+        </nav>
+    </header>
+
+    <h1 class="page-title">Новости Техподдержки Метро New</h1>
 
     <!-- Начало новости -->
     <div class="news-item">
-        <h2 class="news-title">Открытее Поддержки</h2>
-        <div class="news-date">08.08.2025</div>
+        <h2 class="news-title">Обновление расписания метро с 1 сентября</h2>
+        <div class="news-date">01.09.2025</div>
         <div class="news-content">
-           Мы открыты 
+            В связи с увеличением пассажиропотока обновлено расписание движения поездов. Подробнее на официальном сайте.
         </div>
-        <a href="news.h1.html" class="read-more">Читать далее →</a>
+        <a href="#" class="read-more">Читать далее →</a>
     </div>
     <!-- Конец новости -->
 

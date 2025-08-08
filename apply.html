@@ -1,1 +1,159 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8" />
+    <title>Подать заявку — Поддржка Метро New</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: #0055a5;
+            color: white;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            font-weight: bold;
+        }
+        nav a:hover {
+            text-decoration: underline;
+        }
+        main {
+            max-width: 800px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            margin-top: 0;
+            color: #0055a5;
+        }
+        label {
+            display: block;
+            margin-bottom: 15px;
+        }
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #0055a5;
+            color: white;
+            padding: 12px 25px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #003d73;
+        }
+        .small-note {
+            font-size: 14px;
+            color: #777;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Поддржка Метро New</h1>
+        <nav>
+            <a href="index.html">Главная</a>
+            <a href="apply.html">Подать заявку</a>
+            <a href="news.html">Новости</a>
+            <a href="contacts.html">Контакты</a>
+        </nav>
+    </header>
+
+    <main>
+        <h2>Чтобы открыть тикет, заполните данную форму</h2>
+        <form id="ticketForm">
+            <label>
+                Кому:
+                <select name="to" required>
+                    <option value="metro.new.help@gmail.com">metro.new.help@gmail.com</option>
+                </select>
+            </label>
+
+            <label>
+                Ваша почта:
+                <input type="email" name="email" required />
+            </label>
+
+            <label>
+                Тема:
+                <input type="text" name="subject" required />
+            </label>
+
+            <label>
+                Описание:
+                <textarea name="description" rows="6" required></textarea>
+            </label>
+
+            <label>
+                <input type="checkbox" name="agree" required />
+                Я согласен(-а) с 
+                <a href="https://example.com/privacy" target="_blank">Политикой конфиденциальности</a> и 
+                <a href="https://example.com/terms" target="_blank">Пользовательским соглашением</a>
+            </label>
+
+            <p class="small-note">
+                ⚠ Мы не принимаем файлы в целях безопасности. Опишите проблему, и мы постараемся помочь.
+            </p>
+
+            <button type="submit">Отправить</button>
+        </form>
+    </main>
+
+    <script>
+        const webhookUrl = "https://discord.com/api/webhooks/1403319710002581534/XPtUxoDGASHH2KTi6K3sz4cT0pOKlr9xV_qWmTVXh91XdrsXbWrgXt6E8Wd3JouptUQx";
+
+        document.getElementById('ticketForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const email = form.email.value;
+            const subject = form.subject.value;
+            const description = form.description.value;
+
+            const content = `📩 **Новая заявка**\n**От:** ${email}\n**Тема:** ${subject}\n**Описание:**\n${description}`;
+
+            try {
+                const response = await fetch(webhookUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: content })
+                });
+
+                if (response.ok) {
+                    alert('Заявка отправлена! Мы свяжемся с вами в ближайшее время.');
+                    form.reset();
+                } else {
+                    alert('Произошла ошибка при отправке. Попробуйте позже.');
+                }
+            } catch (error) {
+                alert('Ошибка подключения к серверу.');
+            }
+        });
+    </script>
+</body>
+</html>
 

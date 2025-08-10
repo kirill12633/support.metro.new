@@ -2,38 +2,402 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Новости — Поддржка Метро New</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Новости Метро New</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0066CC;
+            --primary-dark: #0052a3;
+            --secondary: #FFD700;
+            --dark: #1A1A1A;
+            --light: #F8F9FA;
+            --gray: #6C757D;
+            --success: #28A745;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .logo-icon {
+            width: 30px;
+            height: 30px;
+            background-color: var(--secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark);
+            font-weight: bold;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background-color: var(--secondary);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover::after {
+            width: 70%;
+        }
+        
+        main {
+            padding: 2rem 0;
+            min-height: calc(100vh - 150px);
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        
+        .page-header p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+        
+        .news-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .news-card {
+            background-color: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .news-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .news-image {
+            height: 200px;
+            background-color: #eee;
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .news-content {
+            padding: 1.5rem;
+        }
+        
+        .news-date {
+            color: var(--gray);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .news-date::before {
+            content: '📅';
+        }
+        
+        .news-title {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .news-excerpt {
+            margin-bottom: 1rem;
+            color: var(--dark);
+        }
+        
+        .read-more {
+            display: inline-block;
+            color: var(--primary);
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .read-more:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 3rem;
+        }
+        
+        .page-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white;
+            color: var(--dark);
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .page-number:hover, .page-number.active {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--secondary);
+        }
+        
+        .copyright {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .page-header h1 {
+                font-size: 2rem;
+            }
+            
+            .news-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
 </head>
 <body>
-<header>
-    <h1>Поддржка Метро New</h1>
-    <nav>
-        <a href="index.html">Главная</a>
-        <a href="support.html">Подать заявку</a>
-        <a href="news.html">Новости</a>
-        <a href="faq.html">FAQ</a>
-    </nav>
-</header>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <span class="logo-icon"></span>
+                    <span>Метро New</span>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Главная</a>
+                    <a href="support.html">Поддержка</a>
+                    <a href="news.html">Новости</a>
+                    <a href="faq.html">FAQ</a>
+                </div>
+            </nav>
+        </div>
+    </header>
 
-<main>
-    <h2>Новости</h2>
+    <main class="container">
+        <div class="page-header">
+            <h1>Новости Метро New</h1>
+            <p>Будьте в курсе последних событий и обновлений нашей системы</p>
+        </div>
+        
+        <div class="news-container">
+            <article class="news-card">
+                <div class="news-image" style="background-image: url('https://via.placeholder.com/600x400')"></div>
+                <div class="news-content">
+                    <div class="news-date">15 ноября 2023</div>
+                    <h3 class="news-title">Запуск новой ветки метро</h3>
+                    <p class="news-excerpt">Мы рады сообщить о запуске новой ветки метро, которая соединит северные и южные районы города. Это сократит время в пути на 30%.</p>
+                    <a href="#" class="read-more">Читать далее →</a>
+                </div>
+            </article>
+            
+            <article class="news-card">
+                <div class="news-image" style="background-image: url('https://via.placeholder.com/600x400')"></div>
+                <div class="news-content">
+                    <div class="news-date">8 ноября 2023</div>
+                    <h3 class="news-title">Новые вагоны в составе</h3>
+                    <p class="news-excerpt">В наш парк поступили 10 новых современных вагонов с улучшенными условиями для пассажиров и системами безопасности.</p>
+                    <a href="#" class="read-more">Читать далее →</a>
+                </div>
+            </article>
+            
+            <article class="news-card">
+                <div class="news-image" style="background-image: url('https://via.placeholder.com/600x400')"></div>
+                <div class="news-content">
+                    <div class="news-date">1 ноября 2023</div>
+                    <h3 class="news-title">Обновление мобильного приложения</h3>
+                    <p class="news-excerpt">Вышло обновление нашего приложения с новым интерфейсом и функцией отслеживания поездов в реальном времени.</p>
+                    <a href="#" class="read-more">Читать далее →</a>
+                </div>
+            </article>
+            
+            <article class="news-card">
+                <div class="news-image" style="background-image: url('https://via.placeholder.com/600x400')"></div>
+                <div class="news-content">
+                    <div class="news-date">25 октября 2023</div>
+                    <h3 class="news-title">Ночное метро по выходным</h3>
+                    <p class="news-excerpt">С этого месяца вводится пробный режим работы метро в ночное время по пятницам и субботам.</p>
+                    <a href="#" class="read-more">Читать далее →</a>
+                </div>
+            </article>
+            
+            <article class="news-card">
+                <div class="news-image" style="background-image: url('https://via.placeholder.com/600x400')"></div>
+                <div class="news-content">
+                    <div class="news-date">18 октября 2023</div>
+                    <h3 class="news-title">Акция для студентов</h3>
+                    <p class="news-excerpt">Специальное предложение для студентов - скидка 30% на месячные проездные при предъявлении студенческого билета.</p>
+                    <a href="#" class="read-more">Читать далее →</a>
+                </div>
+            </article>
+            
+            <article class="news-card">
+                <div class="news-image" style="background-image: url('https://via.placeholder.com/600x400')"></div>
+                <div class="news-content">
+                    <div class="news-date">10 октября 2023</div>
+                    <h3 class="news-title">Реконструкция центральной станции</h3>
+                    <p class="news-excerpt">Начинается масштабная реконструкция центральной станции метро, которая продлится до конца года.</p>
+                    <a href="#" class="read-more">Читать далее →</a>
+                </div>
+            </article>
+        </div>
+        
+        <div class="pagination">
+            <a href="#" class="page-number active">1</a>
+            <a href="#" class="page-number">2</a>
+            <a href="#" class="page-number">3</a>
+            <a href="#" class="page-number">→</a>
+        </div>
+    </main>
 
-    <div class="news-item">
-        <h3>Обновление расписания метро с 1 сентября</h3>
-        <p><small>01.09.2025</small></p>
-        <p>В связи с увеличением пассажиропотока обновлено расписание движения поездов.</p>
-    </div>
-
-    <div class="news-item">
-        <h3>Новые правила проезда</h3>
-        <p><small>25.08.2025</small></p>
-        <p>Введены новые правила безопасности и порядок проезда.</p>
-    </div>
-</main>
-
-<footer>
-    © 2025 Поддржка Метро New. Все права защищены.
-</footer>
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="https://discord.com/invite/WjGZBs3HMX">О нас</a>
+                <a href="https://discord.com/invite/WjGZBs3HMX">Контакты</a>
+                <a href="https://docs.google.com/document/d/1Y_3cs7qEcSehVIirIPSSqJQjxOco5ixipMF6zXSSO_I/edit?usp=sharing">Политика конфиденциальности</a>
+                <a href="https://docs.google.com/document/d/1bbDwsFuSFou-qqcIvhb44mton1z2TY32F9SqcYnMcyI/edit?usp=sharing">Пользовательское соглашение</a>
+            </div>
+            <p class="copyright">© 2025 Метро New. Все права защищены.</p>
+        </div>
+    </footer>
 </body>
 </html>

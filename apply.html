@@ -1,226 +1,434 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<title>Подать заявку — Поддржка Метро New</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-    body {
-        font-family: "Segoe UI", Arial, sans-serif;
-        margin: 0;
-        background: #f5f7fa;
-        color: #333;
-    }
-    header {
-        background: #004080;
-        color: white;
-        padding: 15px 20px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        position: sticky;
-        top: 0;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-    header h1 {
-        font-size: 20px;
-        margin: 0;
-    }
-    nav {
-        display: flex;
-        gap: 15px;
-    }
-    nav a {
-        color: white;
-        text-decoration: none;
-        font-weight: 500;
-        transition: 0.3s;
-    }
-    nav a:hover {
-        color: #ffcc00;
-    }
-    main {
-        max-width: 600px;
-        margin: 30px auto;
-        padding: 15px;
-    }
-    .form-card {
-        background: white;
-        padding: 25px;
-        border-radius: 10px;
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-    .form-card h2 {
-        color: #004080;
-        margin-bottom: 20px;
-        font-size: 20px;
-        text-align: center;
-    }
-    label {
-        display: block;
-        margin-top: 15px;
-        font-weight: bold;
-    }
-    input, select, textarea {
-        width: 100%;
-        padding: 12px;
-        margin-top: 6px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        font-size: 14px;
-        transition: 0.3s;
-    }
-    input:focus, select:focus, textarea:focus {
-        border-color: #004080;
-        box-shadow: 0 0 5px rgba(0,64,128,0.3);
-        outline: none;
-    }
-    textarea {
-        resize: vertical;
-    }
-    .checkbox-label {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-size: 14px;
-        margin-top: 15px;
-        font-weight: normal;
-    }
-    .checkbox-label a {
-        color: #004080;
-        text-decoration: none;
-    }
-    .checkbox-label a:hover {
-        text-decoration: underline;
-    }
-    .small-note {
-        font-size: 13px;
-        color: #555;
-        margin-top: 10px;
-        text-align: center;
-    }
-    button {
-        margin-top: 20px;
-        background: #004080;
-        color: white;
-        padding: 12px;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-        cursor: pointer;
-        transition: 0.3s;
-        width: 100%;
-    }
-    button:hover {
-        background: #0059b3;
-    }
-    footer {
-        text-align: center;
-        padding: 15px;
-        font-size: 14px;
-        color: #666;
-        background: #e9ecef;
-        margin-top: 40px;
-    }
-    @media (max-width: 600px) {
-        nav {
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 10px;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Поддержка Метро New</title>
+    <link href="cdn.discordapp.com/attachments/1371113349663686776/1404044013887295578/WhatsApp_I-removebg-preview-removebg-preview-removebg-preview.png?ex=6899c162&is=68986fe2&hm=4320594955d3d3789be819f62067a0963cbe6f22353db96afcea35269c438bb7&">
+    <style>
+        :root {
+            --primary: #0066CC;
+            --primary-dark: #0052a3;
+            --secondary: #FFD700;
+            --dark: #1A1A1A;
+            --light: #F8F9FA;
+            --gray: #6C757D;
+            --success: #28A745;
         }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
         header {
-            flex-direction: column;
-            align-items: flex-start;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
-    }
-</style>
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+        
+        .logo-icon {
+            width: 30px;
+            height: 30px;
+            background-color: var(--secondary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark);
+            font-weight: bold;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+        
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .nav-links a:hover {
+            background-color: rgba(255, 255, 255, 0.15);
+        }
+        
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background-color: var(--secondary);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover::after {
+            width: 70%;
+        }
+        
+        main {
+            padding: 2rem 0;
+            min-height: calc(100vh - 150px);
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+        
+        .page-header p {
+            color: var(--gray);
+            font-size: 1.1rem;
+        }
+        
+        .ticket-form {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2);
+            outline: none;
+        }
+        
+        textarea {
+            height: 180px;
+            resize: vertical;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .checkbox-group input {
+            margin-top: 0.25rem;
+        }
+        
+        .checkbox-group label {
+            font-weight: normal;
+            margin-bottom: 0;
+        }
+        
+        .checkbox-group label a {
+            color: var(--primary);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .checkbox-group label a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+        
+        .btn:hover {
+            background-color: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-block {
+            display: block;
+            width: 100%;
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+            border-left: 4px solid;
+        }
+        
+        .alert-warning {
+            background-color: rgba(255, 193, 7, 0.1);
+            border-left-color: #FFC107;
+            color: #856404;
+        }
+        
+        .readonly-input {
+            background-color: #f5f5f5;
+            cursor: not-allowed;
+        }
+        
+        footer {
+            background-color: var(--dark);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .footer-links a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .footer-links a:hover {
+            color: var(--secondary);
+        }
+        
+        .copyright {
+            color: var(--gray);
+            font-size: 0.9rem;
+        }
+        
+        @media (max-width: 768px) {
+            nav {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .nav-links {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .page-header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
 </head>
 <body>
-<header>
-    <h1>Поддржка Метро New</h1>
-    <nav>
-        <a href="index.html">Главная</a>
-        <a href="apply.html">Подать заявку</a>
-        <a href="news.html">Новости</a>
-        <a href="faq.html">FAQ</a>
-    </nav>
-</header>
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <span class="cdn.discordapp.com/attachments/1371113349663686776/1404044013887295578/WhatsApp_I-removebg-preview-removebg-preview-removebg-preview.png?ex=6899c162&is=68986fe2&hm=4320594955d3d3789be819f62067a0963cbe6f22353db96afcea35269c438bb7&">M</span>
+                    <span>Метро New</span>
+                </div>
+                <div class="nav-links">
+                    <a href="index.html">Главная</a>
+                    <a href="support.html">Поддержка</a>
+                    <a href="news.html">Новости</a>
+                    <a href="faq.html">FAQ</a>
+                </div>
+            </nav>
+        </div>
+    </header>
 
-<main>
-    <div class="form-card">
-        <h2>Откройте тикет — заполните форму</h2>
-        <form id="ticketForm">
-            <label>Кому:
-                <select name="to" required>
-                    <option value="metro.new.help@gmail.com">metro.new.help@gmail.com</option>
-                </select>
-            </label>
+    <main class="container">
+        <div class="page-header">
+            <h1>Поддержка Метро New</h1>
+            <p>Мы всегда готовы помочь вам с любыми вопросами</p>
+        </div>
+        
+        <div class="ticket-form">
+            <form id="supportForm">
+                <div class="form-group">
+                    <label for="recipient">Кому:</label>
+                    <input type="text" id="recipient" value="metro.new.help@gmail.com" class="readonly-input" readonly>
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Ваша почта:</label>
+                    <input type="email" id="email" required placeholder="example@email.com">
+                </div>
+                
+                <div class="form-group">
+                    <label for="subject">Тема:</label>
+                    <input type="text" id="subject" required placeholder="Опишите кратко суть проблемы">
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Описание:</label>
+                    <textarea id="description" required placeholder="Подробно опишите вашу проблему или вопрос..."></textarea>
+                </div>
+                
+                <div class="checkbox-group">
+                    <input type="checkbox" id="agreement" required>
+                    <label for="agreement">
+                        Я согласен(-а) с <a href="#" id="privacyPolicyLink">Политикой конфиденциальности</a> 
+                        и <a href="#" id="termsLink">Пользовательским соглашением</a>
+                    </label>
+                </div>
+                
+                <button type="submit" class="btn btn-block">Отправить заявку</button>
+            </form>
+            
+            <div class="alert alert-warning">
+                <strong>⚠ Внимание!</strong> Мы не принимаем файлы в целях безопасности. Опишите проблему максимально подробно, 
+                и мы постараемся помочь вам как можно быстрее.
+            </div>
+        </div>
+    </main>
 
-            <label>Ваша почта:
-                <input type="email" name="email" placeholder="you@example.com" required />
-            </label>
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="#">О нас</a>
+                <a href="#">Контакты</a>
+                <a href="#">Политика конфиденциальности</a>
+                <a href="#">Пользовательское соглашение</a>
+            </div>
+            <p class="copyright">© 2025 Метро New. Все права защищены.</p>
+        </div>
+    </footer>
 
-            <label>Тема:
-                <input type="text" name="subject" placeholder="Краткое описание проблемы" required />
-            </label>
-
-            <label>Описание:
-                <textarea name="description" rows="6" placeholder="Подробно опишите вашу проблему..." required></textarea>
-            </label>
-
-            <label class="checkbox-label">
-                <input type="checkbox" name="agree" required>
-                Я согласен(-а) с <a href="#">Политикой конфиденциальности</a> и <a href="#">Пользовательским соглашением</a>
-            </label>
-
-            <p class="small-note">
-                ⚠ Мы не принимаем файлы в целях безопасности. Опишите проблему, и мы постараемся помочь.
-            </p>
-
-            <button type="submit">Отправить</button>
-        </form>
-    </div>
-</main>
-
-<footer>
-    © 2025 Поддржка Метро New. Все права защищены.
-</footer>
-
-<script>
-    const webhookUrl = "https://discord.com/api/webhooks/1403319710002581534/XPtUxoDGASHH2KTi6K3sz4cT0pOKlr9xV_qWmTVXh91XdrsXbWrgXt6E8Wd3JouptUQx";
-
-    document.getElementById('ticketForm').addEventListener('submit', async function(event) {
-        event.preventDefault();
-        const form = event.target;
-        const email = form.email.value.trim();
-        const subject = form.subject.value.trim();
-        const description = form.description.value.trim();
-
-        if (!email || !subject || !description) {
-            alert("Пожалуйста, заполните все поля.");
-            return;
-        }
-
-        const content = `📩 **Новая заявка**\n**От:** ${email}\n**Тема:** ${subject}\n**Описание:**\n${description}`;
-
-        try {
-            const response = await fetch(webhookUrl, {
+    <script>
+        document.getElementById('supportForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const subject = document.getElementById('subject').value;
+            const description = document.getElementById('description').value;
+            
+            const webhookUrl = 'https://discord.com/api/webhooks/1403319710002581534/XPtUxoDGASHH2KTi6K3sz4cT0pOKlr9xV_qWmTVXh91XdrsXbWrgXt6E8Wd3JouptUQx';
+            
+            const message = {
+                content: `🚀 **Новая заявка в поддержку**\n\n📧 **Email:** ${email}\n📌 **Тема:** ${subject}\n📝 **Описание:**\n${description}\n\n||@here||`
+            };
+            
+            // Показываем индикатор загрузки
+            const submitBtn = document.querySelector('#supportForm button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Отправка...';
+            
+            fetch(webhookUrl, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content })
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(message),
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Успешная отправка
+                    submitBtn.textContent = '✓ Отправлено';
+                    submitBtn.style.backgroundColor = 'var(--success)';
+                    
+                    // Показываем уведомление
+                    alert('Ваша заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.');
+                    document.getElementById('supportForm').reset();
+                    
+                    // Возвращаем кнопку в исходное состояние через 3 секунды
+                    setTimeout(() => {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = 'Отправить заявку';
+                        submitBtn.style.backgroundColor = '';
+                    }, 3000);
+                } else {
+                    throw new Error('Ошибка при отправке заявки');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Отправить заявку';
+                alert('Произошла ошибка при отправке заявки. Пожалуйста, попробуйте еще раз.');
             });
-
-            if (response.ok) {
-                alert('Заявка успешно отправлена!');
-                form.reset();
-            } else {
-                alert('Ошибка при отправке. Попробуйте позже.');
-            }
-        } catch {
-            alert('Ошибка подключения к серверу.');
-        }
-    });
-</script>
+        });
+        
+        // Временные обработчики для ссылок на политики (вы замените на реальные ссылки)
+        document.getElementById('privacyPolicyLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('Ссылка на Политику конфиденциальности будет добавлена позже.');
+        });
+        
+        document.getElementById('termsLink').addEventListener('click', function(e) {
+            e.preventDefault();
+            alert('Ссылка на Пользовательское соглашение будет добавлена позже.');
+        });
+    </script>
 </body>
 </html>

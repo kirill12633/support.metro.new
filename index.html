@@ -2,27 +2,74 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <title>Главная — Поддржка Метро New</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Метро New — Главная</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Общие стили, как в support.html */
+        :root {
+            --primary: #0066CC;
+            --primary-dark: #0052a3;
+            --secondary: #FFD700;
+            --dark: #1A1A1A;
+            --light: #F8F9FA;
+            --gray: #6C757D;
+        }
+        * {margin:0;padding:0;box-sizing:border-box;}
+        body {font-family:'Montserrat',sans-serif;background:var(--light);color:var(--dark);line-height:1.6;}
+        header {background:linear-gradient(135deg,var(--primary),var(--primary-dark));color:white;padding:1rem 0;box-shadow:0 4px 12px rgba(0,0,0,0.1);position:sticky;top:0;z-index:1000;}
+        .container {width:90%;max-width:1200px;margin:0 auto;}
+        nav {display:flex;justify-content:space-between;align-items:center;}
+        .logo {display:flex;align-items:center;gap:10px;font-size:1.5rem;font-weight:700;}
+        .logo img {height:40px;}
+        .nav-links {display:flex;gap:1.5rem;}
+        .nav-links a {color:white;text-decoration:none;font-weight:500;padding:0.5rem 1rem;border-radius:4px;transition:all 0.3s ease;position:relative;}
+        .nav-links a:hover {background-color:rgba(255,255,255,0.15);}
+        main {padding:2rem 0;}
+        footer {background-color:var(--dark);color:white;padding:2rem 0;text-align:center;}
+        .footer-links {display:flex;justify-content:center;gap:1.5rem;margin-bottom:1rem;}
+        .footer-links a {color:white;text-decoration:none;transition:color 0.3s;}
+        .footer-links a:hover {color:var(--secondary);}
+        .copyright {color:var(--gray);font-size:0.9rem;}
+        @media(max-width:768px){
+            nav{flex-direction:column;gap:1rem;}
+            .nav-links{flex-wrap:wrap;justify-content:center;}
+        }
+    </style>
 </head>
 <body>
 <header>
-    <h1>Поддржка Метро New</h1>
-    <nav>
-        <a href="index.html">Главная</a>
-        <a href="support.html">Подать заявку</a>
-        <a href="news.html">Новости</a>
-        <a href="faq.html">FAQ</a>
-    </nav>
+    <div class="container">
+        <nav>
+            <div class="logo">
+                <img src="https://cdn.discordapp.com/attachments/1371113349663686776/1404044013887295578/WhatsApp_I-removebg-preview-removebg-preview-removebg-preview.png" alt="Метро New">
+                <span>Метро New</span>
+            </div>
+            <div class="nav-links">
+                <a href="index.html">Главная</a>
+                <a href="support.html">Поддержка</a>
+                <a href="news.html">Новости</a>
+                <a href="faq.html">FAQ</a>
+            </div>
+        </nav>
+    </div>
 </header>
 
-<main>
-    <h2>Добро пожаловать!</h2>
-    <p>Это официальный сайт поддержки Метро New. Здесь вы можете подать заявку, узнать последние новости и получить ответы на частые вопросы.</p>
+<main class="container">
+    <h1>Добро пожаловать в Метро New</h1>
+    <p>Это главная страница нашего проекта. Здесь вы найдете основную информацию, а также сможете перейти в разделы поддержки, новостей и часто задаваемых вопросов.</p>
 </main>
 
 <footer>
-    © 2025 Поддржка Метро New. Все права защищены.
+    <div class="container">
+        <div class="footer-links">
+            <a href="#">О нас</a>
+            <a href="#">Контакты</a>
+            <a href="#">Политика конфиденциальности</a>
+            <a href="#">Пользовательское соглашение</a>
+        </div>
+        <p class="copyright">© 2025 Метро New. Все права защищены.</p>
+    </div>
 </footer>
 </body>
 </html>

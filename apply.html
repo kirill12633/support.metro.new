@@ -17,43 +17,41 @@
 </header>
 
 <main>
-    <h2>Чтобы открыть тикет, заполните данную форму</h2>
-    <form id="ticketForm">
-        <label>
-            Кому:
-            <select name="to" required>
-                <option value="metro.new.help@gmail.com">metro.new.help@gmail.com</option>
-            </select>
-        </label>
+    <div class="form-card">
+        <h2>Чтобы открыть тикет, заполните данную форму</h2>
+        <form id="ticketForm">
+            <label>Кому:
+                <select name="to" required>
+                    <option value="metro.new.help@gmail.com">metro.new.help@gmail.com</option>
+                </select>
+            </label>
 
-        <label>
-            Ваша почта:
-            <input type="email" name="email" required />
-        </label>
+            <label>Ваша почта:
+                <input type="email" name="email" placeholder="you@example.com" required />
+            </label>
 
-        <label>
-            Тема:
-            <input type="text" name="subject" required />
-        </label>
+            <label>Тема:
+                <input type="text" name="subject" placeholder="Краткое описание проблемы" required />
+            </label>
 
-        <label>
-            Описание:
-            <textarea name="description" rows="6" required></textarea>
-        </label>
+            <label>Описание:
+                <textarea name="description" rows="6" placeholder="Подробно опишите вашу проблему..." required></textarea>
+            </label>
 
-        <label>
-            <input type="checkbox" name="agree" required />
-            Я согласен(-а) с 
-            <a href="#">Политикой конфиденциальности</a> и 
-            <a href="#">Пользовательским соглашением</a>
-        </label>
+            <label class="checkbox-label">
+                <input type="checkbox" name="agree" required>
+                Я согласен(-а) с 
+                <a href="#">Политикой конфиденциальности</a> и 
+                <a href="#">Пользовательским соглашением</a>
+            </label>
 
-        <p class="small-note">
-            ⚠ Мы не принимаем файлы в целях безопасности. Опишите проблему, и мы постараемся помочь.
-        </p>
+            <p class="small-note">
+                ⚠ Мы не принимаем файлы в целях безопасности. Опишите проблему, и мы постараемся помочь.
+            </p>
 
-        <button type="submit">Отправить</button>
-    </form>
+            <button type="submit">Отправить</button>
+        </form>
+    </div>
 </main>
 
 <footer>
@@ -66,9 +64,14 @@
     document.getElementById('ticketForm').addEventListener('submit', async function(event) {
         event.preventDefault();
         const form = event.target;
-        const email = form.email.value;
-        const subject = form.subject.value;
-        const description = form.description.value;
+        const email = form.email.value.trim();
+        const subject = form.subject.value.trim();
+        const description = form.description.value.trim();
+
+        if (!email || !subject || !description) {
+            alert("Пожалуйста, заполните все поля.");
+            return;
+        }
 
         const content = `📩 **Новая заявка**\n**От:** ${email}\n**Тема:** ${subject}\n**Описание:**\n${description}`;
 
@@ -76,17 +79,17 @@
             const response = await fetch(webhookUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ content: content })
+                body: JSON.stringify({ content })
             });
 
             if (response.ok) {
-                alert('Заявка отправлена!');
+                alert('Заявка успешно отправлена!');
                 form.reset();
             } else {
-                alert('Ошибка при отправке.');
+                alert('Ошибка при отправке. Попробуйте позже.');
             }
         } catch {
-            alert('Ошибка подключения.');
+            alert('Ошибка подключения к серверу.');
         }
     });
 </script>

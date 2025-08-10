@@ -1,107 +1,81 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Поддржка Метро New - Главная</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0; padding: 0;
-            background-color: #f4f4f4;
-            color: #333;
-        }
-        header {
-            background-color: #0055a5;
-            color: white;
-            padding: 20px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        header h1 {
-            margin: 0;
-            font-size: 24px;
-        }
-        nav a {
-            color: white;
-            text-decoration: none;
-            margin-left: 20px;
-            font-weight: bold;
-        }
-        nav a:hover {
-            text-decoration: underline;
-        }
-        main {
-            max-width: 900px;
-            margin: 40px auto;
-            background: white;
-            padding: 30px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .welcome {
-            font-size: 18px;
-            margin-bottom: 30px;
-        }
-        .btn-apply {
-            display: inline-block;
-            background-color: #0055a5;
-            color: white;
-            padding: 12px 25px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-            margin-bottom: 40px;
-        }
-        .btn-apply:hover {
-            background-color: #003d73;
-        }
-        .news-section {
-            border-top: 1px solid #ccc;
-            padding-top: 20px;
-        }
-        .news-section h2 {
-            margin-top: 0;
-        }
-        .news-item {
-            margin-bottom: 15px;
-        }
-        .news-item a {
-            color: #0055a5;
-            text-decoration: none;
-        }
-        .news-item a:hover {
-            text-decoration: underline;
-        }
-        footer {
-            text-align: center;
-            padding: 20px;
-            background: #eee;
-            margin-top: 60px;
-            font-size: 14px;
-            color: #666;
-        }
-    </style>
-</head>
-<body>
-    <header>
-        <h1>Поддржка Метро New</h1>
-        <nav>
-            <a href="index.html">Главная</a>
-            <a href="apply.html">Подать заявку</a>
-            <a href="news.html">Новости</a>
-            <a href="error.404.html">Контакты</a>
-        </nav>
-    </header>
-    <main>
-        <div class="welcome">
-            Добро пожаловать на официальный сайт поддержки Метро New! Здесь вы можете подать заявку, узнать последние новости и связаться с нами.
-        </div>
-        <a href="apply.html" class="btn-apply">Подать заявку</a>
+/* Общие стили */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-    </main>
-    <footer>
-        © 2025 Поддржка Метро New. Все права защищены.
-    </footer>
-</body>
-</html>
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+}
+
+header {
+    background-color: #0055a5;
+    color: white;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+header h1 {
+    font-size: 20px;
+}
+
+nav {
+    display: flex;
+    gap: 15px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+nav a:hover {
+    text-decoration: underline;
+}
+
+main {
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+footer {
+    text-align: center;
+    padding: 15px;
+    font-size: 14px;
+    color: #666;
+    background: #eee;
+    margin-top: 40px;
+}
+
+/* Блок новостей */
+.news-item {
+    padding: 15px;
+    border-left: 5px solid #0055a5;
+    background: #fff;
+    margin-bottom: 15px;
+    border-radius: 5px;
+}
+
+/* Мобильное меню */
+@media (max-width: 600px) {
+    nav {
+        flex-direction: column;
+        width: 100%;
+        margin-top: 10px;
+    }
+    header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}

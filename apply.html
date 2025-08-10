@@ -1,9 +1,140 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Подать заявку — Поддржка Метро New</title>
-    <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Подать заявку — Поддржка Метро New</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+    body {
+        font-family: "Segoe UI", Arial, sans-serif;
+        margin: 0;
+        background: #f5f7fa;
+        color: #333;
+    }
+    header {
+        background: #004080;
+        color: white;
+        padding: 15px 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        position: sticky;
+        top: 0;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    header h1 {
+        font-size: 20px;
+        margin: 0;
+    }
+    nav {
+        display: flex;
+        gap: 15px;
+    }
+    nav a {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+        transition: 0.3s;
+    }
+    nav a:hover {
+        color: #ffcc00;
+    }
+    main {
+        max-width: 600px;
+        margin: 30px auto;
+        padding: 15px;
+    }
+    .form-card {
+        background: white;
+        padding: 25px;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    .form-card h2 {
+        color: #004080;
+        margin-bottom: 20px;
+        font-size: 20px;
+        text-align: center;
+    }
+    label {
+        display: block;
+        margin-top: 15px;
+        font-weight: bold;
+    }
+    input, select, textarea {
+        width: 100%;
+        padding: 12px;
+        margin-top: 6px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: 0.3s;
+    }
+    input:focus, select:focus, textarea:focus {
+        border-color: #004080;
+        box-shadow: 0 0 5px rgba(0,64,128,0.3);
+        outline: none;
+    }
+    textarea {
+        resize: vertical;
+    }
+    .checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        margin-top: 15px;
+        font-weight: normal;
+    }
+    .checkbox-label a {
+        color: #004080;
+        text-decoration: none;
+    }
+    .checkbox-label a:hover {
+        text-decoration: underline;
+    }
+    .small-note {
+        font-size: 13px;
+        color: #555;
+        margin-top: 10px;
+        text-align: center;
+    }
+    button {
+        margin-top: 20px;
+        background: #004080;
+        color: white;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.3s;
+        width: 100%;
+    }
+    button:hover {
+        background: #0059b3;
+    }
+    footer {
+        text-align: center;
+        padding: 15px;
+        font-size: 14px;
+        color: #666;
+        background: #e9ecef;
+        margin-top: 40px;
+    }
+    @media (max-width: 600px) {
+        nav {
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+</style>
 </head>
 <body>
 <header>
@@ -18,7 +149,7 @@
 
 <main>
     <div class="form-card">
-        <h2>Чтобы открыть тикет, заполните данную форму</h2>
+        <h2>Откройте тикет — заполните форму</h2>
         <form id="ticketForm">
             <label>Кому:
                 <select name="to" required>
@@ -40,9 +171,7 @@
 
             <label class="checkbox-label">
                 <input type="checkbox" name="agree" required>
-                Я согласен(-а) с 
-                <a href="#">Политикой конфиденциальности</a> и 
-                <a href="#">Пользовательским соглашением</a>
+                Я согласен(-а) с <a href="#">Политикой конфиденциальности</a> и <a href="#">Пользовательским соглашением</a>
             </label>
 
             <p class="small-note">

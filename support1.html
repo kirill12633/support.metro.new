@@ -40,7 +40,7 @@
             </nav>
             
             <div class="user-info" id="userInfo">
-                <!-- Заполнится JavaScript -->
+                <p><i class="fas fa-spinner fa-spin"></i> Загрузка...</p>
             </div>
         </div>
     </header>
@@ -66,7 +66,7 @@
                 <div class="form-group">
                     <label for="ticketSubject">
                         <i class="fas fa-tag"></i>
-                        Тема
+                        Тема *
                     </label>
                     <input type="text" id="ticketSubject" required placeholder="Кратко опишите проблему">
                 </div>
@@ -74,7 +74,7 @@
                 <div class="form-group">
                     <label for="ticketCategory">
                         <i class="fas fa-folder"></i>
-                        Категория
+                        Категория *
                     </label>
                     <select id="ticketCategory" required>
                         <option value="">Выберите категорию</option>
@@ -91,7 +91,7 @@
                 <div class="form-group">
                     <label for="ticketDescription">
                         <i class="fas fa-align-left"></i>
-                        Подробное описание
+                        Подробное описание *
                     </label>
                     <textarea id="ticketDescription" rows="6" required 
                               placeholder="Опишите проблему максимально подробно. Укажите шаги воспроизведения, версию игры, устройство и т.д."></textarea>
@@ -117,7 +117,9 @@
                     </p>
                 </div>
                 
-                <button type="submit" class="btn" style="width: 100%; padding: 1rem;">
+                <div id="recaptchaContainer"></div>
+                
+                <button type="submit" class="btn" style="width: 100%; padding: 1rem;" id="submitBtn">
                     <i class="fas fa-paper-plane"></i>
                     Отправить заявку
                 </button>
@@ -139,167 +141,312 @@
         </div>
     </main>
 
+    <footer>
+        <div class="container">
+            <p>© 2024 Метро New. Все права защищены.</p>
+        </div>
+    </footer>
+
     <script>
-        // Проверка авторизации
-        document.addEventListener('DOMContentLoaded', function() {
-            const user = getCurrentUser();
-            const userInfo = document.getElementById('userInfo');
-            
-            if (!user) {
-                showMessage('Пожалуйста, войдите в систему', 'error');
-                setTimeout(() => window.location.href = 'login.html', 1000);
-                return;
+        let currentUser = null;
+        
+        // Инициализация страницы
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                // Загрузка пользователя
+                currentUser = await getCurrentUser();
+                
+                if (!currentUser) {
+                    showMessage('Пожалуйста, войдите в систему', 'error');
+                    setTimeout(() => window.location.href = 'login.html', 2000);
+                    return;
+                }
+                
+                // Обновление информации о пользователе в шапке
+                updateUserInfo();
+                
+                // Загрузка статуса поддержки
+                loadSupportStatus();
+                
+                // Инициализация reCAPTCHA
+                initRecaptcha();
+                
+            } catch (error) {
+                console.error('Ошибка инициализации:', error);
+                showMessage('Ошибка загрузки страницы. Пожалуйста, обновите страницу.', 'error');
             }
-            
-            userInfo.innerHTML = `
-                <span>${user.email}</span>
-                <button onclick="logout()" class="btn btn-secondary">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Выйти
-                </button>
-            `;
-            
-            loadSupportStatus();
         });
+        
+        function updateUserInfo() {
+            const userInfo = document.getElementById('userInfo');
+            if (currentUser) {
+                userInfo.innerHTML = `
+                    <span>${currentUser.email}</span>
+                    <button onclick="logout()" class="btn btn-secondary">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Выйти
+                    </button>
+                `;
+            } else {
+                userInfo.innerHTML = `
+                    <a href="login.html" class="nav-link">Войти</a>
+                    <a href="register.html" class="btn">Регистрация</a>
+                `;
+            }
+        }
         
         function logout() {
             auth.signOut().then(() => {
-                window.location.href = 'index.html';
+                showMessage('Вы вышли из системы', 'success');
+                setTimeout(() => {
+                    window.location.href = 'index.html';
+                }, 1000);
+            }).catch(error => {
+                console.error('Ошибка выхода:', error);
+                showMessage('Ошибка при выходе', 'error');
             });
         }
         
         async function loadSupportStatus() {
             try {
-                const statusRef = database.ref('support/status');
-                statusRef.on('value', (snapshot) => {
-                    const status = snapshot.val();
-                    if (status) {
-                        document.getElementById('supportStatus').innerHTML = `
-                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
-                                <div style="text-align: center;">
-                                    <div style="font-size: 2rem; color: #667eea;">${status.onlineAgents || 3}</div>
-                                    <div style="color: #666; font-size: 0.9rem;">Онлайн специалистов</div>
-                                </div>
-                                <div style="text-align: center;">
-                                    <div style="font-size: 2rem; color: #28a745;">${status.averageResponseTime || '47'} мин</div>
-                                    <div style="color: #666; font-size: 0.9rem;">Среднее время ответа</div>
-                                </div>
-                                <div style="text-align: center;">
-                                    <div style="font-size: 2rem; color: #ffc107;">${status.ticketsInQueue || 8}</div>
-                                    <div style="color: #666; font-size: 0.9rem;">Заявок в очереди</div>
-                                </div>
-                                <div style="text-align: center;">
-                                    <div style="font-size: 2rem; color: #17a2b8;">${status.todaySolved || 24}</div>
-                                    <div style="color: #666; font-size: 0.9rem;">Решено сегодня</div>
-                                </div>
-                            </div>
-                        `;
-                    }
-                });
+                // Здесь можно загрузить реальную статистику из Firebase
+                document.getElementById('supportStatus').innerHTML = `
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; color: #667eea;">3</div>
+                            <div style="color: #666; font-size: 0.9rem;">Онлайн специалистов</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; color: #28a745;">47 мин</div>
+                            <div style="color: #666; font-size: 0.9rem;">Среднее время ответа</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; color: #ffc107;">8</div>
+                            <div style="color: #666; font-size: 0.9rem;">Заявок в очереди</div>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 2rem; color: #17a2b8;">24</div>
+                            <div style="color: #666; font-size: 0.9rem;">Решено сегодня</div>
+                        </div>
+                    </div>
+                `;
             } catch (error) {
                 console.error('Ошибка загрузки статуса:', error);
             }
         }
         
+        function initRecaptcha() {
+            // reCAPTCHA v3 инициализируется автоматически
+            grecaptcha.ready(function() {
+                console.log('reCAPTCHA готов');
+            });
+        }
+        
+        // Валидация данных перед отправкой
+        function validateTicketData(data) {
+            const requiredFields = ['userId', 'userEmail', 'subject', 'category', 'description'];
+            
+            for (const field of requiredFields) {
+                if (!data[field] || data[field].toString().trim() === '') {
+                    console.error(`Поле ${field} пустое:`, data[field]);
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+        
+        // Обработчик отправки формы
         document.getElementById('ticketForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const user = getCurrentUser();
-            if (!user) {
+            // Проверяем авторизацию
+            if (!currentUser) {
                 showMessage('Пожалуйста, войдите в систему', 'error');
                 return;
             }
             
-            const subject = document.getElementById('ticketSubject').value;
+            const subject = document.getElementById('ticketSubject').value.trim();
             const category = document.getElementById('ticketCategory').value;
-            const description = document.getElementById('ticketDescription').value;
+            const description = document.getElementById('ticketDescription').value.trim();
             const priority = document.getElementById('ticketPriority').value;
             
-            const submitBtn = this.querySelector('button');
+            // Валидация формы
+            if (!subject || subject.length < 5) {
+                showMessage('Введите тему заявки (минимум 5 символов)', 'error');
+                return;
+            }
+            
+            if (!category) {
+                showMessage('Выберите категорию', 'error');
+                return;
+            }
+            
+            if (!description || description.length < 10) {
+                showMessage('Введите подробное описание проблемы (минимум 10 символов)', 'error');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('submitBtn');
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Отправка...';
             
             try {
-                // reCAPTCHA v3
+                // Получаем токен reCAPTCHA
                 const token = await grecaptcha.execute('6Ld9uw0sAAAAAMTSxQ9Vxd0LhEcwweHGF-DWdZIo', {action: 'submit_ticket'});
                 
-                // Генерация ID заявки
-                const ticketId = 'TICKET-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5).toUpperCase();
+                if (!token) {
+                    throw new Error('reCAPTCHA не пройдена');
+                }
                 
-                // Создание заявки в базе данных
+                // Генерация ID заявки
+                const timestamp = Date.now();
+                const randomStr = Math.random().toString(36).substr(2, 5).toUpperCase();
+                const ticketId = `TICKET-${timestamp}-${randomStr}`;
+                
+                // Подготовка данных
                 const ticketData = {
                     id: ticketId,
-                    userId: user.uid,
-                    userEmail: user.email,
+                    userId: currentUser.uid,
+                    userEmail: currentUser.email,
                     subject: subject,
                     category: category,
                     description: description,
                     priority: priority,
                     status: 'new',
-                    createdAt: firebase.database.ServerValue.TIMESTAMP,
-                    updatedAt: firebase.database.ServerValue.TIMESTAMP
+                    createdAt: timestamp,
+                    updatedAt: timestamp,
+                    assignedTo: null,
+                    assignedAt: null
                 };
                 
-                // Сохранение заявки
+                console.log('Отправляемые данные заявки:', ticketData);
+                
+                // Валидация данных
+                if (!validateTicketData(ticketData)) {
+                    throw new Error('Некорректные данные заявки');
+                }
+                
+                // Сохранение в Firebase
                 await database.ref('tickets/' + ticketId).set(ticketData);
                 
                 // Обновление счетчика заявок пользователя
-                await database.ref('users/' + user.uid + '/ticketsCount').transaction((current) => {
-                    return (current || 0) + 1;
+                const userRef = database.ref('users/' + currentUser.uid);
+                const snapshot = await userRef.once('value');
+                const userData = snapshot.val() || {};
+                const ticketsCount = (userData.ticketsCount || 0) + 1;
+                
+                await userRef.update({
+                    ticketsCount: ticketsCount,
+                    lastTicketCreated: timestamp
                 });
                 
-                // Отправка уведомления в Discord (если нужно)
-                await sendDiscordNotification(ticketData);
+                // Отправка уведомления в Discord
+                try {
+                    await sendDiscordNotification(ticketData, 'new_ticket');
+                } catch (discordError) {
+                    console.warn('Ошибка отправки в Discord:', discordError);
+                }
                 
-                showMessage(`Заявка создана! Номер: ${ticketId}`, 'success');
+                showMessage(`Заявка создана успешно! Номер: ${ticketId}`, 'success');
                 
                 // Очистка формы
-                this.reset();
+                document.getElementById('ticketForm').reset();
                 
-                // Перенаправление к списку заявок
+                // Перенаправление через 2 секунды
                 setTimeout(() => {
                     window.location.href = 'tickets.html';
                 }, 2000);
                 
             } catch (error) {
                 console.error('Ошибка создания заявки:', error);
-                showMessage('Ошибка создания заявки: ' + error.message, 'error');
+                
+                let message = 'Ошибка создания заявки';
+                
+                if (error.message.includes('PERMISSION_DENIED')) {
+                    message = 'Ошибка доступа к базе данных';
+                } else if (error.message.includes('network')) {
+                    message = 'Ошибка сети. Проверьте подключение';
+                } else if (error.message.includes('undefined')) {
+                    message = 'Некорректные данные формы';
+                }
+                
+                showMessage(`${message}: ${error.message}`, 'error');
+                
+                // Сбрасываем reCAPTCHA
+                grecaptcha.reset();
+                
             } finally {
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Отправить заявку';
             }
         });
         
-        async function sendDiscordNotification(ticketData) {
-            // Ваш Discord webhook URL (замените на реальный)
-            const webhookUrl = 'https://discord.com/api/webhooks/YOUR_WEBHOOK_URL';
+        // Показываем сообщения
+        function showMessage(message, type = 'info') {
+            // Удаляем старые сообщения
+            const oldMessages = document.querySelectorAll('.alert');
+            oldMessages.forEach(msg => msg.remove());
             
-            const message = {
-                embeds: [{
-                    title: "🎫 Новая заявка в поддержку",
-                    color: 0x0066CC,
-                    fields: [
-                        { name: "Номер", value: ticketData.id, inline: true },
-                        { name: "Пользователь", value: ticketData.userEmail, inline: true },
-                        { name: "Тема", value: ticketData.subject, inline: false },
-                        { name: "Категория", value: ticketData.category, inline: true },
-                        { name: "Приоритет", value: ticketData.priority, inline: true }
-                    ],
-                    timestamp: new Date().toISOString(),
-                    footer: { text: "Метро New Support" }
-                }]
-            };
+            // Создаем новое сообщение
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `alert alert-${type}`;
+            msgDiv.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                z-index: 10000;
+                animation: slideIn 0.3s ease;
+                max-width: 400px;
+            `;
             
-            try {
-                await fetch(webhookUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(message)
-                });
-            } catch (error) {
-                console.log('Discord notification failed:', error);
-            }
+            const icon = type === 'success' ? 'fa-check-circle' : 
+                         type === 'error' ? 'fa-exclamation-circle' : 
+                         type === 'warning' ? 'fa-exclamation-triangle' : 'fa-info-circle';
+            
+            msgDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fas ${icon}"></i>
+                    <span>${message}</span>
+                </div>
+            `;
+            
+            document.body.appendChild(msgDiv);
+            
+            // Автоматическое удаление через 5 секунд
+            setTimeout(() => {
+                if (msgDiv.parentNode) {
+                    msgDiv.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => msgDiv.remove(), 300);
+                }
+            }, 5000);
         }
+        
+        // Добавляем стили для анимации
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+                to {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes slideOut {
+                from {
+                    transform: translateX(0);
+                    opacity: 1;
+                }
+                to {
+                    transform: translateX(100%);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>

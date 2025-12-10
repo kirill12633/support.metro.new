@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мои заявки - Метро New</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-subway"></i>
+                Метро New
+            </a>
+            
+            <nav>
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    Главная
+                </a>
+                <a href="support.html" class="nav-link">
+                    <i class="fas fa-headset"></i>
+                    Поддержка
+                </a>
+                <a href="dashboard.html" class="nav-link">
+                    <i class="fas fa-user"></i>
+                    Кабинет
+                </a>
+                <a href="tickets.html" class="nav-link active">
+                    <i class="fas fa-ticket-alt"></i>
+                    Заявки
+                </a>
+            </nav>
+            
+            <div class="user-info" id="userInfo">
+                <!-- Заполнится JavaScript -->
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h1 style="color: white;">
+                <i class="fas fa-ticket-alt"></i>
+                Мои заявки
+            </h1>
+            <a href="support.html" class="btn">
+                <i class="fas fa-plus-circle"></i>
+                Новая заявка
+            </a>
+        </div>
+        
+        <!-- Фильтры -->
+        <div class="card" style="margin-bottom: 1rem;">
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <span>Фильтры:</span>
+                <button onclick="filterTickets('all')" class="btn btn-secondary" id="filterAll">Все</button>
+                <button onclick="filterTickets('new')" class="btn btn-secondary" id="filterNew">Новые</button>
+                <button onclick="filterTickets('in-progress')" class="btn btn-secondary" id="filterProgress">В работе</button>
+                <button onclick="filterTickets('solved')" class="btn btn-secondary" id="filterSolved">Решено</button>
+            </div>
+        </div>
+        
+        <!-- Список заявок -->
+        <div class="card">
+            <div id="ticketsList">
+                <p style="text-align: center; padding: 2rem;">
+                    <i class="fas fa-sync fa-spin"></i>
+                    Загрузка заявок...
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentFilter = 'all';
+        let allTickets = [];
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = getCurrentUser();
+            const userInfo = document.getElementById('userInfo');
+            
+            if (!user) {
+                showMessage('Пожалуйста, войдите в систему', 'error');
+                setTimeout(() => window.location.href = 'login.html', 1000);
+                return;
+            }
+            
+            userInfo.innerHTML = `
+                <span>${user.email}</span>
+                <button onclick="logout()" class="btn btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Выйти
+                </button>
+            `;
+            
+            loadUserTickets(user.uid);
+        });
+        
+        function logout() {
+            auth.signOut().then(() => {
+                window.location.href = 'index.html';
+            });
+        }
+        
+        async function loadUserTickets(userId) {
+            try {
+                const ticketsRef = database.ref('tickets').orderByChild('userId').equalTo(userId);
+                ticketsRef.on('value', (snapshot) => {
+                    const tickets = snapshot.val();
+                    allTickets = tickets ? Object.values(tickets).reverse() : [];
+                    displayTickets();
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки заявок:', error);
+                document.getElementById('ticketsList').innerHTML = `
+                    <p style="text-align: center; padding: 2rem; color: #666;">
+                        Ошибка загрузки заявок
+                    </p>
+                `;
+            }
+        }
+        
+        function filterTickets(filter) {
+            currentFilter = filter;
+            
+            // Обновление активной кнопки
+            document.querySelectorAll('[id^="filter"]').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById(`filter${filter.charAt(0).toUpperCase() + filter.slice(1)}`).classList.add('active');
+            
+            displayTickets();
+        }
+        
+        function displayTickets() {
+            const ticketsList = document.getElementById('ticketsList');
+            
+            if (allTickets.length === 0) {
+                ticketsList.innerHTML = `
+                    <div style="text-align: center; padding: 3rem;">
+                        <i class="fas fa-inbox" style="font-size: 3rem; color: #ddd; margin-bottom: 1rem;"></i>
+                        <h3 style="color: #666;">Нет заявок</h3>
+                        <p style="color: #999;">У вас еще нет созданных заявок</p>
+                        <a href="support.html" class="btn" style="margin-top: 1rem;">
+                            <i class="fas fa-plus-circle"></i>
+                            Создать первую заявку
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Фильтрация
+            let filteredTickets = allTickets;
+            if (currentFilter !== 'all') {
+                filteredTickets = allTickets.filter(ticket => ticket.status === currentFilter);
+            }
+            
+            let html = '';
+            
+            if (filteredTickets.length === 0) {
+                html = `
+                    <div style="text-align: center; padding: 2rem; color: #666;">
+                        Нет заявок с выбранным фильтром
+                    </div>
+                `;
+            } else {
+                html = '<table class="table">';
+                html += '<tr><th>Номер</th><th>Тема</th><th>Категория</th><th>Статус</th><th>Дата</th><th>Действия</th></tr>';
+                
+                filteredTickets.forEach(ticket => {
+                    html += `
+                        <tr>
+                            <td><strong>${ticket.id}</strong></td>
+                            <td>${ticket.subject}</td>
+                            <td>${getCategoryText(ticket.category)}</td>
+                            <td><span class="status-badge status-${ticket.status}">${getStatusText(ticket.status)}</span></td>
+                            <td>${new Date(ticket.createdAt).toLocaleDateString('ru-RU')}</td>
+                            <td>
+                                <button onclick="viewTicket('${ticket.id}')" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</table>';
+            }
+            
+            // Статистика
+            const stats = {
+                all: allTickets.length,
+                new: allTickets.filter(t => t.status === 'new').length,
+                'in-progress': allTickets.filter(t => t.status === 'in-progress').length,
+                solved: allTickets.filter(t => t.status === 'solved').length
+            };
+            
+            const statsHtml = `
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; padding: 1rem; background: #f8f9fa; border-radius: 5px;">
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; color: #333;">${stats.all}</div>
+                        <div style="font-size: 0.875rem; color: #666;">Всего</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; color: #007bff;">${stats.new}</div>
+                        <div style="font-size: 0.875rem; color: #666;">Новых</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; color: #ffc107;">${stats['in-progress']}</div>
+                        <div style="font-size: 0.875rem; color: #666;">В работе</div>
+                    </div>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.5rem; color: #28a745;">${stats.solved}</div>
+                        <div style="font-size: 0.875rem; color: #666;">Решено</div>
+                    </div>
+                </div>
+            `;
+            
+            ticketsList.innerHTML = statsHtml + html;
+        }
+        
+        function getCategoryText(category) {
+            const categories = {
+                'technical': 'Техническая',
+                'payment': 'Оплата',
+                'gameplay': 'Геймплей',
+                'account': 'Аккаунт',
+                'bug': 'Ошибка',
+                'suggestion': 'Предложение',
+                'other': 'Другое'
+            };
+            return categories[category] || category;
+        }
+        
+        function getStatusText(status) {
+            const statuses = {
+                'new': 'Новая',
+                'in-progress': 'В работе',
+                'solved': 'Решено',
+                'closed': 'Закрыто'
+            };
+            return statuses[status] || status;
+        }
+        
+        function viewTicket(ticketId) {
+            // Здесь можно добавить просмотр деталей заявки
+            alert(`Просмотр заявки ${ticketId}\n\nДетальная информация о заявке будет доступна в следующей версии.`);
+        }
+    </script>
+</body>
+</html>

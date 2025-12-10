@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет - Метро New</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-subway"></i>
+                Метро New
+            </a>
+            
+            <nav>
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    Главная
+                </a>
+                <a href="support.html" class="nav-link">
+                    <i class="fas fa-headset"></i>
+                    Поддержка
+                </a>
+                <a href="dashboard.html" class="nav-link active">
+                    <i class="fas fa-user"></i>
+                    Кабинет
+                </a>
+                <a href="tickets.html" class="nav-link">
+                    <i class="fas fa-ticket-alt"></i>
+                    Заявки
+                </a>
+            </nav>
+            
+            <div class="user-info" id="userInfo">
+                <!-- Заполнится JavaScript -->
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1 style="color: white; margin-bottom: 2rem;">
+            <i class="fas fa-user-circle"></i>
+            Личный кабинет
+        </h1>
+        
+        <div class="dashboard-grid">
+            <!-- Статистика -->
+            <div class="card">
+                <h3>
+                    <i class="fas fa-chart-bar"></i>
+                    Статистика
+                </h3>
+                <div id="userStats">
+                    <p><i class="fas fa-sync fa-spin"></i> Загрузка...</p>
+                </div>
+            </div>
+            
+            <!-- Информация профиля -->
+            <div class="card">
+                <h3>
+                    <i class="fas fa-user"></i>
+                    Информация профиля
+                </h3>
+                <div id="profileInfo">
+                    <p><i class="fas fa-sync fa-spin"></i> Загрузка...</p>
+                </div>
+            </div>
+            
+            <!-- Быстрые действия -->
+            <div class="card">
+                <h3>
+                    <i class="fas fa-bolt"></i>
+                    Быстрые действия
+                </h3>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <a href="support.html" class="btn">
+                        <i class="fas fa-plus-circle"></i>
+                        Новая заявка
+                    </a>
+                    <a href="tickets.html" class="btn btn-secondary">
+                        <i class="fas fa-ticket-alt"></i>
+                        Мои заявки
+                    </a>
+                    <button onclick="changePassword()" class="btn btn-secondary">
+                        <i class="fas fa-key"></i>
+                        Сменить пароль
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Последние заявки -->
+            <div class="card" style="grid-column: span 2;">
+                <h3>
+                    <i class="fas fa-history"></i>
+                    Последние заявки
+                </h3>
+                <div id="recentTickets">
+                    <p><i class="fas fa-sync fa-spin"></i> Загрузка...</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = getCurrentUser();
+            const userInfo = document.getElementById('userInfo');
+            
+            if (!user) {
+                showMessage('Пожалуйста, войдите в систему', 'error');
+                setTimeout(() => window.location.href = 'login.html', 1000);
+                return;
+            }
+            
+            userInfo.innerHTML = `
+                <span>${user.email}</span>
+                <button onclick="logout()" class="btn btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Выйти
+                </button>
+            `;
+            
+            loadUserData(user.uid);
+            loadRecentTickets(user.uid);
+        });
+        
+        function logout() {
+            auth.signOut().then(() => {
+                window.location.href = 'index.html';
+            });
+        }
+        
+        async function loadUserData(userId) {
+            try {
+                const userRef = database.ref('users/' + userId);
+                userRef.on('value', (snapshot) => {
+                    const userData = snapshot.val();
+                    if (userData) {
+                        // Статистика
+                        document.getElementById('userStats').innerHTML = `
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 2rem; color: #667eea;">${userData.ticketsCount || 0}</div>
+                                    <div style="color: #666;">Всего заявок</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 2rem; color: #28a745;">${userData.activeTickets || 0}</div>
+                                    <div style="color: #666;">Активные</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 2rem; color: #ffc107;">${userData.solvedTickets || 0}</div>
+                                    <div style="color: #666;">Решено</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 2rem; color: #17a2b8;">${Math.round((userData.solvedTickets || 0) / (userData.ticketsCount || 1) * 100)}%</div>
+                                    <div style="color: #666;">Успешных</div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        // Информация профиля
+                        const createdAt = userData.createdAt ? new Date(userData.createdAt).toLocaleDateString('ru-RU') : 'Неизвестно';
+                        document.getElementById('profileInfo').innerHTML = `
+                            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                                <div>
+                                    <strong>Email:</strong>
+                                    <div>${userData.email}</div>
+                                </div>
+                                <div>
+                                    <strong>Дата регистрации:</strong>
+                                    <div>${createdAt}</div>
+                                </div>
+                                <div>
+                                    <strong>Уровень поддержки:</strong>
+                                    <div>${getSupportLevel(userData.ticketsCount || 0)}</div>
+                                </div>
+                                <div>
+                                    <strong>ID пользователя:</strong>
+                                    <div style="font-size: 0.8rem; color: #666;">${userId.substring(0, 8)}...</div>
+                                </div>
+                            </div>
+                        `;
+                    }
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки данных:', error);
+            }
+        }
+        
+        function getSupportLevel(ticketsCount) {
+            if (ticketsCount >= 20) return '⭐⭐⭐⭐⭐ Эксперт';
+            if (ticketsCount >= 10) return '⭐⭐⭐⭐ Продвинутый';
+            if (ticketsCount >= 5) return '⭐⭐⭐ Активный';
+            if (ticketsCount >= 1) return '⭐⭐ Начинающий';
+            return '⭐ Новый пользователь';
+        }
+        
+        async function loadRecentTickets(userId) {
+            try {
+                const ticketsRef = database.ref('tickets').orderByChild('userId').equalTo(userId).limitToLast(5);
+                ticketsRef.on('value', (snapshot) => {
+                    const tickets = snapshot.val();
+                    const recentTicketsDiv = document.getElementById('recentTickets');
+                    
+                    if (!tickets) {
+                        recentTicketsDiv.innerHTML = '<p>У вас еще нет заявок</p>';
+                        return;
+                    }
+                    
+                    let html = '<table class="table">';
+                    html += '<tr><th>Номер</th><th>Тема</th><th>Статус</th><th>Дата</th></tr>';
+                    
+                    Object.values(tickets).reverse().forEach(ticket => {
+                        html += `
+                            <tr>
+                                <td>${ticket.id}</td>
+                                <td>${ticket.subject}</td>
+                                <td><span class="status-badge status-${ticket.status}">${getStatusText(ticket.status)}</span></td>
+                                <td>${new Date(ticket.createdAt).toLocaleDateString('ru-RU')}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    html += '</table>';
+                    recentTicketsDiv.innerHTML = html;
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки заявок:', error);
+            }
+        }
+        
+        function getStatusText(status) {
+            const statuses = {
+                'new': 'Новая',
+                'in-progress': 'В работе',
+                'solved': 'Решено',
+                'closed': 'Закрыто'
+            };
+            return statuses[status] || status;
+        }
+        
+        function changePassword() {
+            const newPassword = prompt('Введите новый пароль (минимум 6 символов):');
+            if (!newPassword || newPassword.length < 6) {
+                showMessage('Пароль должен быть минимум 6 символов', 'error');
+                return;
+            }
+            
+            const user = auth.currentUser;
+            user.updatePassword(newPassword).then(() => {
+                showMessage('Пароль успешно изменен', 'success');
+            }).catch(error => {
+                console.error('Ошибка смены пароля:', error);
+                showMessage('Ошибка: ' + error.message, 'error');
+            });
+        }
+    </script>
+</body>
+</html>

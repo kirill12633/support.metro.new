@@ -17,6 +17,9 @@ const auth = firebase.auth();
 const database = firebase.database();
 const storage = firebase.storage();
 
+// Проверяем, есть ли сохраненная сессия
+const savedUser = localStorage.getItem('metroUser');
+
 // Вспомогательные функции
 function showMessage(message, type = 'info') {
     const msgDiv = document.createElement('div');
@@ -26,17 +29,66 @@ function showMessage(message, type = 'info') {
     setTimeout(() => msgDiv.remove(), 5000);
 }
 
-function getCurrentUser() {
-    return auth.currentUser;
+// Асинхронная функция для получения текущего пользователя
+async function getCurrentUser() {
+    return new Promise((resolve) => {
+        // Проверяем localStorage сначала для быстрого ответа
+        if (localStorage.getItem('metroUser')) {
+            try {
+                const savedUser = JSON.parse(localStorage.getItem('metroUser'));
+                if (savedUser && savedUser.uid) {
+                    resolve({
+                        uid: savedUser.uid,
+                        email: savedUser.email,
+                        emailVerified: savedUser.emailVerified || false,
+                        ...savedUser
+                    });
+                    return;
+                }
+            } catch (e) {
+                console.log('Error parsing saved user:', e);
+            }
+        }
+        
+        // Если нет в localStorage, ждем Firebase
+        const unsubscribe = auth.onAuthStateChanged((user) => {
+            unsubscribe();
+            if (user) {
+                // Сохраняем в localStorage
+                const userData = {
+                    uid: user.uid,
+                    email: user.email,
+                    emailVerified: user.emailVerified,
+                    displayName: user.displayName
+                };
+                localStorage.setItem('metroUser', JSON.stringify(userData));
+                localStorage.setItem('userId', user.uid);
+                localStorage.setItem('userEmail', user.email);
+            } else {
+                // Очищаем localStorage если пользователь вышел
+                localStorage.removeItem('metroUser');
+                localStorage.removeItem('userId');
+                localStorage.removeItem('userEmail');
+            }
+            resolve(user);
+        });
+    });
 }
 
 function isLoggedIn() {
-    return !!auth.currentUser;
+    return !!localStorage.getItem('metroUser');
 }
 
 function isEmailVerified() {
-    const user = auth.currentUser;
-    return user && user.emailVerified;
+    const userData = localStorage.getItem('metroUser');
+    if (!userData) return false;
+    
+    try {
+        const user = JSON.parse(userData);
+        return user.emailVerified || false;
+    } catch (e) {
+        return false;
+    }
 }
 
 function formatDate(timestamp) {
@@ -61,7 +113,7 @@ function generateToken(length = 32) {
 
 // Проверка прав администратора
 async function isAdmin() {
-    const user = getCurrentUser();
+    const user = await getCurrentUser();
     if (!user) return false;
     
     try {
@@ -123,18 +175,153 @@ async function sendDiscordNotification(ticketData, type = 'new_ticket') {
     }
 }
 
-// Проверка входа при загрузке страницы
-auth.onAuthStateChanged((user) => {
+// Автоматическое обновление последнего входа
+auth.onAuthStateChanged(async (user) => {
     if (user) {
         console.log('Пользователь вошел:', user.email);
+        
+        // Сохраняем в localStorage
+        const userData = {
+            uid: user.uid,
+            email: user.email,
+            emailVerified: user.emailVerified,
+            displayName: user.displayName
+        };
+        localStorage.setItem('metroUser', JSON.stringify(userData));
         localStorage.setItem('userId', user.uid);
         localStorage.setItem('userEmail', user.email);
         
-        // Обновление lastSeen
-        database.ref('users/' + user.uid + '/lastSeen').set(Date.now());
+        try {
+            // Обновление lastSeen в базе данных
+            const userRef = database.ref('users/' + user.uid);
+            await userRef.update({
+                lastSeen: firebase.database.ServerValue.TIMESTAMP,
+                emailVerified: user.emailVerified
+            });
+            
+            // Обновляем emailVerified если изменилось
+            const userDataSnapshot = await userRef.once('value');
+            const userDataFromDB = userDataSnapshot.val();
+            
+            if (userDataFromDB) {
+                // Сохраняем дополнительные данные из базы
+                const updatedUserData = {
+                    ...userData,
+                    username: userDataFromDB.username,
+                    role: userDataFromDB.role
+                };
+                localStorage.setItem('metroUser', JSON.stringify(updatedUserData));
+            }
+        } catch (error) {
+            console.error('Ошибка обновления lastSeen:', error);
+        }
     } else {
         console.log('Пользователь вышел');
+        localStorage.removeItem('metroUser');
         localStorage.removeItem('userId');
         localStorage.removeItem('userEmail');
     }
 });
+
+// Функция для ожидания инициализации пользователя
+async function waitForUser(timeout = 5000) {
+    return new Promise((resolve, reject) => {
+        const startTime = Date.now();
+        
+        const checkUser = () => {
+            const user = auth.currentUser;
+            if (user) {
+                resolve(user);
+            } else if (Date.now() - startTime > timeout) {
+                reject(new Error('Timeout waiting for user'));
+            } else {
+                setTimeout(checkUser, 100);
+            }
+        };
+        
+        checkUser();
+    });
+}
+
+// Функция для защиты страниц (использовать в начале скрипта каждой защищенной страницы)
+async function protectPage(requireEmailVerification = false, redirectTo = 'login.html') {
+    try {
+        // Ждем инициализацию Firebase
+        const user = await getCurrentUser();
+        
+        if (!user) {
+            showMessage('Пожалуйста, войдите в систему', 'error');
+            setTimeout(() => {
+                window.location.href = redirectTo;
+            }, 1500);
+            return null;
+        }
+        
+        if (requireEmailVerification && !user.emailVerified) {
+            showMessage('Пожалуйста, подтвердите ваш email', 'warning');
+            return null;
+        }
+        
+        return user;
+    } catch (error) {
+        console.error('Ошибка проверки авторизации:', error);
+        showMessage('Ошибка авторизации', 'error');
+        setTimeout(() => {
+            window.location.href = redirectTo;
+        }, 1500);
+        return null;
+    }
+}
+
+// Функция для обновления данных пользователя на всех страницах
+function updateUserInfoOnPage() {
+    const userInfoElements = document.querySelectorAll('#userInfo');
+    
+    if (userInfoElements.length > 0) {
+        getCurrentUser().then(user => {
+            userInfoElements.forEach(element => {
+                if (user) {
+                    element.innerHTML = `
+                        <span>${user.email}</span>
+                        <button onclick="logout()" class="btn btn-secondary">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Выйти
+                        </button>
+                    `;
+                } else {
+                    element.innerHTML = `
+                        <a href="login.html" class="nav-link">Войти</a>
+                        <a href="register.html" class="btn">Регистрация</a>
+                    `;
+                }
+            });
+        });
+    }
+}
+
+// Функция выхода
+function logout() {
+    auth.signOut().then(() => {
+        // Очищаем localStorage
+        localStorage.removeItem('metroUser');
+        localStorage.removeItem('userId');
+        localStorage.removeItem('userEmail');
+        
+        showMessage('Вы вышли из системы', 'success');
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 1000);
+    }).catch((error) => {
+        console.error('Ошибка выхода:', error);
+        showMessage('Ошибка при выходе', 'error');
+    });
+}
+
+// Автоматическое обновление информации о пользователе при загрузке страницы
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+        setTimeout(updateUserInfoOnPage, 100); // Небольшая задержка для Firebase
+    });
+} else {
+    setTimeout(updateUserInfoOnPage, 100);
+}

@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Панель администратора - Метро New</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-subway"></i>
+                Метро New
+            </a>
+            
+            <nav>
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    Главная
+                </a>
+                <a href="admin.html" class="nav-link active">
+                    <i class="fas fa-crown"></i>
+                    Админ-панель
+                </a>
+                <a href="support.html" class="nav-link">
+                    <i class="fas fa-headset"></i>
+                    Поддержка
+                </a>
+            </nav>
+            
+            <div class="user-info" id="userInfo">
+                <!-- Заполнится JavaScript -->
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <h1 style="color: white; margin-bottom: 2rem;">
+            <i class="fas fa-crown"></i>
+            Панель администратора
+        </h1>
+        
+        <!-- Статистика -->
+        <div class="dashboard-grid" style="margin-bottom: 2rem;">
+            <div class="card">
+                <h3>
+                    <i class="fas fa-chart-line"></i>
+                    Статистика сегодня
+                </h3>
+                <div id="todayStats">
+                    <p><i class="fas fa-spinner fa-spin"></i> Загрузка...</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>
+                    <i class="fas fa-ticket-alt"></i>
+                    Заявки
+                </h3>
+                <div id="ticketsStats">
+                    <p><i class="fas fa-spinner fa-spin"></i> Загрузка...</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>
+                    <i class="fas fa-users"></i>
+                    Пользователи
+                </h3>
+                <div id="usersStats">
+                    <p><i class="fas fa-spinner fa-spin"></i> Загрузка...</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <h3>
+                    <i class="fas fa-user-tie"></i>
+                    Специалисты
+                </h3>
+                <div id="agentsStats">
+                    <p><i class="fas fa-spinner fa-spin"></i> Загрузка...</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Графики -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <h3>
+                <i class="fas fa-chart-bar"></i>
+                Аналитика заявок
+            </h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div>
+                    <canvas id="ticketsByCategoryChart"></canvas>
+                </div>
+                <div>
+                    <canvas id="ticketsByStatusChart"></canvas>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Активные заявки -->
+        <div class="card" style="margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3>
+                    <i class="fas fa-clock"></i>
+                    Активные заявки
+                </h3>
+                <div>
+                    <select id="filterActive" onchange="filterActiveTickets()" style="padding: 0.5rem;">
+                        <option value="all">Все</option>
+                        <option value="new">Новые</option>
+                        <option value="in-progress">В работе</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="activeTickets" style="max-height: 400px; overflow-y: auto;">
+                <p><i class="fas fa-spinner fa-spin"></i> Загрузка...</p>
+            </div>
+        </div>
+        
+        <!-- Управление пользователями -->
+        <div class="card">
+            <h3>
+                <i class="fas fa-user-cog"></i>
+                Управление пользователями
+            </h3>
+            
+            <div style="margin: 1rem 0;">
+                <input type="text" id="searchUser" placeholder="Поиск по email или имени" 
+                       style="width: 100%; padding: 0.75rem; border: 1px solid #ddd; border-radius: 5px;">
+            </div>
+            
+            <div id="usersList" style="max-height: 400px; overflow-y: auto;">
+                <p><i class="fas fa-spinner fa-spin"></i> Загрузка...</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let ticketsChart1, ticketsChart2;
+        
+        document.addEventListener('DOMContentLoaded', async function() {
+            const user = getCurrentUser();
+            
+            if (!user) {
+                showMessage('Пожалуйста, войдите в систему', 'error');
+                setTimeout(() => window.location.href = 'login.html', 1000);
+                return;
+            }
+            
+            // Проверка прав администратора
+            const admin = await isAdmin();
+            if (!admin) {
+                showMessage('Доступ запрещен', 'error');
+                setTimeout(() => window.location.href = 'index.html', 2000);
+                return;
+            }
+            
+            document.getElementById('userInfo').innerHTML = `
+                <span><i class="fas fa-crown"></i> ${user.email}</span>
+                <button onclick="logout()" class="btn btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Выйти
+                </button>
+            `;
+            
+            // Загрузка данных
+            loadStats();
+            loadActiveTickets();
+            loadUsers();
+            setupCharts();
+            
+            // Поиск пользователей
+            document.getElementById('searchUser').addEventListener('input', debounce(searchUsers, 300));
+            
+            // Real-time обновления
+            setupRealtimeUpdates();
+        });
+        
+        async function loadStats() {
+            try {
+                // Статистика за сегодня
+                const today = new Date().setHours(0, 0, 0, 0);
+                const ticketsRef = database.ref('tickets');
+                const usersRef = database.ref('users');
+                
+                ticketsRef.once('value', (ticketsSnapshot) => {
+                    const tickets = ticketsSnapshot.val();
+                    const usersSnapshot = usersRef.once('value');
+                    
+                    Promise.resolve(usersSnapshot).then((usersData) => {
+                        const users = usersData.val();
+                        
+                        // Счетчики
+                        let todayTickets = 0;
+                        let todayMessages = 0;
+                        let totalTickets = 0;
+                        let newTickets = 0;
+                        let inProgress = 0;
+                        let solved = 0;
+                        let totalUsers = 0;
+                        let activeUsers = 0;
+                        let agents = 0;
+                        
+                        if (tickets) {
+                            Object.values(tickets).forEach(ticket => {
+                                totalTickets++;
+                                
+                                if (ticket.createdAt >= today) todayTickets++;
+                                
+                                if (ticket.status === 'new') newTickets++;
+                                else if (ticket.status === 'in-progress') inProgress++;
+                                else if (ticket.status === 'solved') solved++;
+                                
+                                // Подсчет сообщений
+                                if (ticket.messages) {
+                                    const messages = Object.values(ticket.messages);
+                                    const todayMessagesCount = messages.filter(msg => msg.timestamp >= today).length;
+                                    todayMessages += todayMessagesCount;
+                                }
+                            });
+                        }
+                        
+                        if (users) {
+                            totalUsers = Object.keys(users).length;
+                            agents = Object.values(users).filter(u => u.role === 'admin' || u.role === 'agent').length;
+                            
+                            // Активные пользователи (были онлайн сегодня)
+                            const activeThreshold = Date.now() - 24 * 60 * 60 * 1000;
+                            activeUsers = Object.values(users).filter(u => u.lastSeen && u.lastSeen > activeThreshold).length;
+                        }
+                        
+                        // Обновление интерфейса
+                        document.getElementById('todayStats').innerHTML = `
+                            <div style="text-align: center;">
+                                <div style="font-size: 2.5rem; color: #667eea;">${todayTickets}</div>
+                                <div style="color: #666;">новых заявок</div>
+                                <div style="margin-top: 0.5rem; color: #666;">
+                                    <i class="fas fa-comment"></i> ${todayMessages} сообщений
+                                </div>
+                            </div>
+                        `;
+                        
+                        document.getElementById('ticketsStats').innerHTML = `
+                            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem;">
+                                <div style="text-align: center;">
+                                    <div style="font-size: 1.5rem; color: #007bff;">${newTickets}</div>
+                                    <div style="font-size: 0.8rem; color: #666;">Новых</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 1.5rem; color: #ffc107;">${inProgress}</div>
+                                    <div style="font-size: 0.8rem; color: #666;">В работе</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 1.5rem; color: #28a745;">${solved}</div>
+                                    <div style="font-size: 0.8rem; color: #666;">Решено</div>
+                                </div>
+                                <div style="text-align: center;">
+                                    <div style="font-size: 1.5rem; color: #333;">${totalTickets}</div>
+                                    <div style="font-size: 0.8rem; color: #666;">Всего</div>
+                                </div>
+                            </div>
+                        `;
+                        
+                        document.getElementById('usersStats').innerHTML = `
+                            <div style="text-align: center;">
+                                <div style="font-size: 2.5rem; color: #28a745;">${totalUsers}</div>
+                                <div style="color: #666;">пользователей</div>
+                                <div style="margin-top: 0.5rem; color: #666;">
+                                    <i class="fas fa-user-check"></i> ${activeUsers} активных
+                                </div>
+                            </div>
+                        `;
+                        
+                        document.getElementById('agentsStats').innerHTML = `
+                            <div style="text-align: center;">
+                                <div style="font-size: 2.5rem; color: #ffc107;">${agents}</div>
+                                <div style="color: #666;">специалистов</div>
+                            </div>
+                        `;
+                    });
+                });
+                
+            } catch (error) {
+                console.error('Ошибка загрузки статистики:', error);
+            }
+        }
+        
+        async function loadActiveTickets(filter = 'all') {
+            try {
+                const ticketsRef = database.ref('tickets');
+                ticketsRef.on('value', (snapshot) => {
+                    const tickets = snapshot.val();
+                    const activeTicketsDiv = document.getElementById('activeTickets');
+                    
+                    if (!tickets) {
+                        activeTicketsDiv.innerHTML = '<p>Нет активных заявок</p>';
+                        return;
+                    }
+                    
+                    let html = '<table class="table">';
+                    html += '<tr><th>Номер</th><th>Тема</th><th>Пользователь</th><th>Статус</th><th>Действия</th></tr>';
+                    
+                    Object.values(tickets)
+                        .filter(ticket => filter === 'all' || ticket.status === filter)
+                        .sort((a, b) => b.createdAt - a.createdAt)
+                        .slice(0, 20)
+                        .forEach(ticket => {
+                            html += `
+                                <tr>
+                                    <td><strong>${ticket.id}</strong></td>
+                                    <td>${ticket.subject.substring(0, 50)}${ticket.subject.length > 50 ? '...' : ''}</td>
+                                    <td>${ticket.userEmail}</td>
+                                    <td><span class="status-badge status-${ticket.status}">${getStatusText(ticket.status)}</span></td>
+                                    <td>
+                                        <button onclick="assignToMe('${ticket.id}')" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.875rem; margin-right: 0.25rem;">
+                                            <i class="fas fa-user-plus"></i>
+                                        </button>
+                                        <button onclick="viewTicketAdmin('${ticket.id}')" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                    
+                    html += '</table>';
+                    activeTicketsDiv.innerHTML = html;
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки заявок:', error);
+            }
+        }
+        
+        function filterActiveTickets() {
+            const filter = document.getElementById('filterActive').value;
+            loadActiveTickets(filter === 'all' ? 'all' : filter);
+        }
+        
+        async function loadUsers(search = '') {
+            try {
+                const usersRef = database.ref('users');
+                usersRef.on('value', (snapshot) => {
+                    const users = snapshot.val();
+                    const usersListDiv = document.getElementById('usersList');
+                    
+                    if (!users) {
+                        usersListDiv.innerHTML = '<p>Нет пользователей</p>';
+                        return;
+                    }
+                    
+                    let html = '<table class="table">';
+                    html += '<tr><th>Email</th><th>Имя</th><th>Роль</th><th>Заявок</th><th>Действия</th></tr>';
+                    
+                    Object.entries(users)
+                        .filter(([uid, user]) => {
+                            if (!search) return true;
+                            const searchLower = search.toLowerCase();
+                            return user.email.toLowerCase().includes(searchLower) || 
+                                   (user.username && user.username.toLowerCase().includes(searchLower));
+                        })
+                        .slice(0, 20)
+                        .forEach(([uid, user]) => {
+                            html += `
+                                <tr>
+                                    <td>${user.email}</td>
+                                    <td>${user.username || '-'}</td>
+                                    <td>
+                                        <select onchange="changeUserRole('${uid}', this.value)" style="padding: 0.25rem;">
+                                            <option value="user" ${user.role === 'user' ? 'selected' : ''}>Пользователь</option>
+                                            <option value="agent" ${user.role === 'agent' ? 'selected' : ''}>Специалист</option>
+                                            <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Админ</option>
+                                        </select>
+                                    </td>
+                                    <td>${user.ticketsCount || 0}</td>
+                                    <td>
+                                        <button onclick="resetUserPassword('${user.email}')" class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;">
+                                            <i class="fas fa-key"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                        });
+                    
+                    html += '</table>';
+                    usersListDiv.innerHTML = html;
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки пользователей:', error);
+            }
+        }
+        
+        function searchUsers() {
+            const search = document.getElementById('searchUser').value;
+            loadUsers(search);
+        }
+        
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        function setupCharts() {
+            const ctx1 = document.getElementById('ticketsByCategoryChart').getContext('2d');
+            const ctx2 = document.getElementById('ticketsByStatusChart').getContext('2d');
+            
+            // Загрузка данных для графиков
+            database.ref('tickets').once('value', (snapshot) => {
+                const tickets = snapshot.val();
+                
+                if (!tickets) return;
+                
+                // Категории
+                const categories = {};
+                // Статусы
+                const statuses = {};
+                
+                Object.values(tickets).forEach(ticket => {
+                    // Категории
+                    categories[ticket.category] = (categories[ticket.category] || 0) + 1;
+                    // Статусы
+                    statuses[ticket.status] = (statuses[ticket.status] || 0) + 1;
+                });
+                
+                // График по категориям
+                ticketsChart1 = new Chart(ctx1, {
+                    type: 'doughnut',
+                    data: {
+                        labels: Object.keys(categories).map(c => getCategoryText(c)),
+                        datasets: [{
+                            data: Object.values(categories),
+                            backgroundColor: [
+                                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0',
+                                '#9966FF', '#FF9F40', '#FF6384'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+                
+                // График по статусам
+                ticketsChart2 = new Chart(ctx2, {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(statuses).map(s => getStatusText(s)),
+                        datasets: [{
+                            label: 'Количество',
+                            data: Object.values(statuses),
+                            backgroundColor: [
+                                '#007bff', '#ffc107', '#28a745', '#dc3545'
+                            ]
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+        }
+        
+        function setupRealtimeUpdates() {
+            // Обновление статистики каждые 30 секунд
+            setInterval(() => {
+                loadStats();
+                updateCharts();
+            }, 30000);
+            
+            // Слушаем новые заявки
+            database.ref('tickets').orderByChild('createdAt').startAt(Date.now() - 60000).on('child_added', (snapshot) => {
+                const ticket = snapshot.val();
+                showMessage(`Новая заявка: ${ticket.id} от ${ticket.userEmail}`, 'info');
+            });
+        }
+        
+        function updateCharts() {
+            if (ticketsChart1 || ticketsChart2) {
+                database.ref('tickets').once('value', (snapshot) => {
+                    const tickets = snapshot.val();
+                    
+                    if (!tickets) return;
+                    
+                    const categories = {};
+                    const statuses = {};
+                    
+                    Object.values(tickets).forEach(ticket => {
+                        categories[ticket.category] = (categories[ticket.category] || 0) + 1;
+                        statuses[ticket.status] = (statuses[ticket.status] || 0) + 1;
+                    });
+                    
+                    if (ticketsChart1) {
+                        ticketsChart1.data.datasets[0].data = Object.values(categories);
+                        ticketsChart1.update();
+                    }
+                    
+                    if (ticketsChart2) {
+                        ticketsChart2.data.datasets[0].data = Object.values(statuses);
+                        ticketsChart2.update();
+                    }
+                });
+            }
+        }
+        
+        async function assignToMe(ticketId) {
+            const user = getCurrentUser();
+            
+            try {
+                await database.ref('tickets/' + ticketId).update({
+                    assignedTo: user.uid,
+                    status: 'in-progress',
+                    assignedAt: Date.now(),
+                    updatedAt: Date.now()
+                });
+                
+                showMessage('Заявка назначена на вас', 'success');
+                
+            } catch (error) {
+                console.error('Ошибка назначения заявки:', error);
+                showMessage('Ошибка назначения заявки', 'error');
+            }
+        }
+        
+        function viewTicketAdmin(ticketId) {
+            window.open(`support-ticket.html?id=${ticketId}`, '_blank');
+        }
+        
+        async function changeUserRole(userId, role) {
+            try {
+                await database.ref('users/' + userId + '/role').set(role);
+                showMessage(`Роль пользователя изменена на ${role}`, 'success');
+            } catch (error) {
+                console.error('Ошибка изменения роли:', error);
+                showMessage('Ошибка изменения роли', 'error');
+            }
+        }
+        
+        function resetUserPassword(email) {
+            if (confirm(`Сбросить пароль для ${email}?`)) {
+                auth.sendPasswordResetEmail(email)
+                    .then(() => {
+                        showMessage('Письмо для сброса пароля отправлено', 'success');
+                    })
+                    .catch(error => {
+                        console.error('Ошибка сброса пароля:', error);
+                        showMessage('Ошибка сброса пароля', 'error');
+                    });
+            }
+        }
+        
+        function logout() {
+            auth.signOut().then(() => {
+                window.location.href = 'index.html';
+            });
+        }
+    </script>
+</body>
+</html>

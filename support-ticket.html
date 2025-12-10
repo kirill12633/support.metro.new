@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Чат заявки - Метро New</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="firebase-config.js"></script>
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-subway"></i>
+                Метро New
+            </a>
+            
+            <nav>
+                <a href="index.html" class="nav-link">
+                    <i class="fas fa-home"></i>
+                    Главная
+                </a>
+                <a href="support.html" class="nav-link">
+                    <i class="fas fa-headset"></i>
+                    Поддержка
+                </a>
+                <a href="dashboard.html" class="nav-link">
+                    <i class="fas fa-user"></i>
+                    Кабинет
+                </a>
+                <a href="tickets.html" class="nav-link">
+                    <i class="fas fa-ticket-alt"></i>
+                    Заявки
+                </a>
+            </nav>
+            
+            <div class="user-info" id="userInfo">
+                <!-- Заполнится JavaScript -->
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div id="ticketHeader" style="background: white; border-radius: 10px; padding: 1.5rem; margin-bottom: 1rem;">
+            <h2 id="ticketSubject">Загрузка...</h2>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 1rem;">
+                <div>
+                    <span id="ticketId" style="font-family: monospace; background: #f8f9fa; padding: 0.5rem 1rem; border-radius: 5px;"></span>
+                    <span id="ticketStatus" class="status-badge" style="margin-left: 1rem;"></span>
+                </div>
+                <div>
+                    <button onclick="closeTicket()" class="btn btn-secondary" id="closeBtn" style="display: none;">
+                        <i class="fas fa-times"></i>
+                        Закрыть заявку
+                    </button>
+                    <button onclick="window.history.back()" class="btn">
+                        <i class="fas fa-arrow-left"></i>
+                        Назад
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1rem;">
+            <!-- Чат -->
+            <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h3>
+                        <i class="fas fa-comments"></i>
+                        Обсуждение
+                    </h3>
+                    <div id="typingIndicator" style="color: #666; font-size: 0.9rem; display: none;">
+                        <i class="fas fa-pencil-alt"></i>
+                        Специалист печатает...
+                    </div>
+                </div>
+                
+                <div id="chatMessages" style="height: 400px; overflow-y: auto; margin-bottom: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 5px;">
+                    <p style="text-align: center; color: #666;">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        Загрузка сообщений...
+                    </p>
+                </div>
+                
+                <!-- Форма отправки сообщения -->
+                <div id="messageForm">
+                    <div class="form-group">
+                        <textarea id="messageInput" rows="3" placeholder="Введите ваше сообщение..." style="width: 100%;"></textarea>
+                    </div>
+                    
+                    <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <button onclick="sendMessage()" class="btn" style="flex: 1;">
+                            <i class="fas fa-paper-plane"></i>
+                            Отправить
+                        </button>
+                        
+                        <label class="btn btn-secondary" style="cursor: pointer; padding: 0.5rem 1rem;">
+                            <i class="fas fa-paperclip"></i>
+                            <input type="file" id="fileUpload" style="display: none;" onchange="uploadFile()">
+                            Файл
+                        </label>
+                        
+                        <div id="uploadProgress" style="display: none;">
+                            <div style="width: 100px; height: 5px; background: #ddd; border-radius: 3px; overflow: hidden;">
+                                <div id="progressBar" style="height: 100%; background: #28a745; width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Информация о заявке -->
+            <div class="card">
+                <h3>
+                    <i class="fas fa-info-circle"></i>
+                    Информация
+                </h3>
+                
+                <div style="margin-top: 1rem;">
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Категория:</strong>
+                        <div id="ticketCategory"></div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Приоритет:</strong>
+                        <div id="ticketPriority"></div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Создано:</strong>
+                        <div id="ticketCreated"></div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Последнее обновление:</strong>
+                        <div id="ticketUpdated"></div>
+                    </div>
+                    
+                    <div style="margin-bottom: 1rem;">
+                        <strong>Специалист:</strong>
+                        <div id="ticketAgent">
+                            <i class="fas fa-user-clock"></i>
+                            Ожидает назначения
+                        </div>
+                    </div>
+                </div>
+                
+                <hr style="margin: 1rem 0;">
+                
+                <h4 style="margin-bottom: 0.5rem;">
+                    <i class="fas fa-paperclip"></i>
+                    Прикрепленные файлы
+                </h4>
+                <div id="attachmentsList" style="max-height: 200px; overflow-y: auto;">
+                    <p style="color: #666; font-size: 0.9rem;">Нет файлов</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        let currentTicketId = null;
+        let currentTicketData = null;
+        let chatRef = null;
+        let typingRef = null;
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const user = getCurrentUser();
+            const userInfo = document.getElementById('userInfo');
+            
+            if (!user) {
+                showMessage('Пожалуйста, войдите в систему', 'error');
+                setTimeout(() => window.location.href = 'login.html', 1000);
+                return;
+            }
+            
+            userInfo.innerHTML = `
+                <span>${user.email}</span>
+                <button onclick="logout()" class="btn btn-secondary">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Выйти
+                </button>
+            `;
+            
+            // Получение ID заявки из URL
+            const urlParams = new URLSearchParams(window.location.search);
+            currentTicketId = urlParams.get('id');
+            
+            if (!currentTicketId) {
+                showMessage('Заявка не найдена', 'error');
+                setTimeout(() => window.location.href = 'tickets.html', 2000);
+                return;
+            }
+            
+            loadTicketData();
+        });
+        
+        async function loadTicketData() {
+            try {
+                const ticketRef = database.ref('tickets/' + currentTicketId);
+                
+                ticketRef.on('value', (snapshot) => {
+                    const ticket = snapshot.val();
+                    if (!ticket) {
+                        showMessage('Заявка не найдена', 'error');
+                        return;
+                    }
+                    
+                    currentTicketData = ticket;
+                    
+                    // Проверка доступа
+                    const user = getCurrentUser();
+                    const isAdmin = user.uid === 'admin' || ticket.userId === user.uid;
+                    
+                    if (!isAdmin && ticket.userId !== user.uid) {
+                        showMessage('Доступ запрещен', 'error');
+                        setTimeout(() => window.location.href = 'tickets.html', 2000);
+                        return;
+                    }
+                    
+                    // Обновление информации
+                    document.getElementById('ticketSubject').textContent = ticket.subject;
+                    document.getElementById('ticketId').textContent = ticket.id;
+                    document.getElementById('ticketStatus').textContent = getStatusText(ticket.status);
+                    document.getElementById('ticketStatus').className = `status-badge status-${ticket.status}`;
+                    
+                    document.getElementById('ticketCategory').textContent = getCategoryText(ticket.category);
+                    document.getElementById('ticketPriority').textContent = getPriorityText(ticket.priority);
+                    document.getElementById('ticketCreated').textContent = formatDate(ticket.createdAt);
+                    document.getElementById('ticketUpdated').textContent = formatDate(ticket.updatedAt);
+                    
+                    // Кнопка закрытия
+                    if (ticket.status !== 'closed' && ticket.userId === getCurrentUser().uid) {
+                        document.getElementById('closeBtn').style.display = 'inline-block';
+                    }
+                    
+                    // Загрузка чата
+                    loadChatMessages();
+                    
+                    // Загрузка файлов
+                    loadAttachments();
+                    
+                    // Загрузка информации о специалисте
+                    if (ticket.assignedTo) {
+                        loadAgentInfo(ticket.assignedTo);
+                    }
+                    
+                    // Подписка на печатающих пользователей
+                    setupTypingIndicator();
+                });
+                
+            } catch (error) {
+                console.error('Ошибка загрузки заявки:', error);
+                showMessage('Ошибка загрузки заявки', 'error');
+            }
+        }
+        
+        function loadChatMessages() {
+            const chatMessages = document.getElementById('chatMessages');
+            chatMessages.innerHTML = '<p><i class="fas fa-spinner fa-spin"></i> Загрузка сообщений...</p>';
+            
+            chatRef = database.ref('tickets/' + currentTicketId + '/messages');
+            
+            chatRef.on('value', (snapshot) => {
+                const messages = snapshot.val();
+                chatMessages.innerHTML = '';
+                
+                if (!messages) {
+                    chatMessages.innerHTML = `
+                        <p style="text-align: center; color: #666; padding: 2rem;">
+                            <i class="fas fa-comment-slash"></i>
+                            Нет сообщений. Начните обсуждение!
+                        </p>
+                    `;
+                    return;
+                }
+                
+                Object.values(messages).forEach(msg => {
+                    const messageDiv = document.createElement('div');
+                    messageDiv.style.cssText = `
+                        margin-bottom: 1rem;
+                        padding: 0.75rem;
+                        background: ${msg.senderType === 'user' ? '#e3f2fd' : '#f0f0f0'};
+                        border-radius: 10px;
+                        margin-left: ${msg.senderType === 'user' ? '2rem' : '0'};
+                        margin-right: ${msg.senderType === 'user' ? '0' : '2rem'};
+                    `;
+                    
+                    const senderName = msg.senderType === 'user' ? 'Вы' : (msg.senderName || 'Специалист');
+                    
+                    messageDiv.innerHTML = `
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+                            <strong style="color: #333;">${senderName}</strong>
+                            <small style="color: #666;">${formatDate(msg.timestamp)}</small>
+                        </div>
+                        <div style="color: #333;">${msg.message}</div>
+                        ${msg.fileUrl ? `
+                        <div style="margin-top: 0.5rem;">
+                            <a href="${msg.fileUrl}" target="_blank" style="color: #667eea; text-decoration: none;">
+                                <i class="fas fa-paperclip"></i>
+                                ${msg.fileName || 'Скачать файл'}
+                            </a>
+                        </div>
+                        ` : ''}
+                    `;
+                    
+                    chatMessages.appendChild(messageDiv);
+                });
+                
+                // Автоскролл к последнему сообщению
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            });
+        }
+        
+        function setupTypingIndicator() {
+            const user = getCurrentUser();
+            const typingIndicator = document.getElementById('typingIndicator');
+            
+            typingRef = database.ref('tickets/' + currentTicketId + '/typing');
+            
+            // Слушаем изменения
+            typingRef.on('value', (snapshot) => {
+                const typingUsers = snapshot.val();
+                if (typingUsers) {
+                    const otherUsers = Object.keys(typingUsers).filter(uid => uid !== user.uid);
+                    if (otherUsers.length > 0) {
+                        typingIndicator.style.display = 'block';
+                    } else {
+                        typingIndicator.style.display = 'none';
+                    }
+                } else {
+                    typingIndicator.style.display = 'none';
+                }
+            });
+            
+            // Отслеживаем ввод текста
+            const messageInput = document.getElementById('messageInput');
+            let typingTimeout;
+            
+            messageInput.addEventListener('input', () => {
+                if (messageInput.value.trim()) {
+                    // Указываем что пользователь печатает
+                    typingRef.child(user.uid).set(true);
+                    
+                    // Очищаем предыдущий таймер
+                    clearTimeout(typingTimeout);
+                    
+                    // Через 3 секунды перестаем показывать "печатает"
+                    typingTimeout = setTimeout(() => {
+                        typingRef.child(user.uid).remove();
+                    }, 3000);
+                } else {
+                    typingRef.child(user.uid).remove();
+                }
+            });
+        }
+        
+        async function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
+            
+            if (!message) {
+                showMessage('Введите сообщение', 'error');
+                return;
+            }
+            
+            const user = getCurrentUser();
+            const messageId = Date.now();
+            
+            try {
+                // Добавляем сообщение в базу
+                await chatRef.child(messageId).set({
+                    message: message,
+                    senderId: user.uid,
+                    senderEmail: user.email,
+                    senderName: localStorage.getItem('username') || user.email.split('@')[0],
+                    senderType: 'user',
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+                
+                // Обновляем время обновления заявки
+                await database.ref('tickets/' + currentTicketId + '/updatedAt').set(Date.now());
+                
+                // Убираем статус "печатает"
+                if (typingRef) {
+                    typingRef.child(user.uid).remove();
+                }
+                
+                // Очищаем поле ввода
+                messageInput.value = '';
+                
+                // Отправляем уведомление в Discord
+                await sendDiscordNotification({
+                    ticketId: currentTicketId,
+                    senderEmail: user.email,
+                    senderType: 'user',
+                    message: message
+                }, 'new_message');
+                
+            } catch (error) {
+                console.error('Ошибка отправки сообщения:', error);
+                showMessage('Ошибка отправки сообщения', 'error');
+            }
+        }
+        
+        async function uploadFile() {
+            const fileInput = document.getElementById('fileUpload');
+            const file = fileInput.files[0];
+            
+            if (!file) return;
+            
+            // Проверка размера (макс 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showMessage('Файл слишком большой (макс. 10MB)', 'error');
+                return;
+            }
+            
+            // Проверка типа файла
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'application/pdf', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            if (!allowedTypes.includes(file.type)) {
+                showMessage('Недопустимый тип файла', 'error');
+                return;
+            }
+            
+            const user = getCurrentUser();
+            const progressBar = document.getElementById('progressBar');
+            const uploadProgress = document.getElementById('uploadProgress');
+            
+            uploadProgress.style.display = 'block';
+            
+            try {
+                // Загрузка в Firebase Storage
+                const storageRef = storage.ref();
+                const fileRef = storageRef.child(`tickets/${currentTicketId}/${Date.now()}_${file.name}`);
+                
+                const uploadTask = fileRef.put(file);
+                
+                uploadTask.on('state_changed',
+                    (snapshot) => {
+                        // Прогресс загрузки
+                        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                        progressBar.style.width = progress + '%';
+                    },
+                    (error) => {
+                        console.error('Ошибка загрузки файла:', error);
+                        showMessage('Ошибка загрузки файла', 'error');
+                        uploadProgress.style.display = 'none';
+                    },
+                    async () => {
+                        // Получаем URL файла
+                        const downloadURL = await uploadTask.snapshot.ref.getDownloadURL();
+                        
+                        // Добавляем сообщение с файлом
+                        const messageId = Date.now();
+                        await chatRef.child(messageId).set({
+                            message: 'Прикреплен файл',
+                            senderId: user.uid,
+                            senderEmail: user.email,
+                            senderName: localStorage.getItem('username') || user.email.split('@')[0],
+                            senderType: 'user',
+                            timestamp: firebase.database.ServerValue.TIMESTAMP,
+                            fileUrl: downloadURL,
+                            fileName: file.name,
+                            fileSize: file.size
+                        });
+                        
+                        // Обновляем время обновления заявки
+                        await database.ref('tickets/' + currentTicketId + '/updatedAt').set(Date.now());
+                        
+                        // Добавляем файл в список прикрепленных
+                        await database.ref('tickets/' + currentTicketId + '/attachments').push({
+                            name: file.name,
+                            url: downloadURL,
+                            size: file.size,
+                            uploadedAt: Date.now(),
+                            uploadedBy: user.uid
+                        });
+                        
+                        // Скрываем прогресс-бар
+                        uploadProgress.style.display = 'none';
+                        progressBar.style.width = '0%';
+                        fileInput.value = '';
+                        
+                        showMessage('Файл успешно загружен', 'success');
+                    }
+                );
+                
+            } catch (error) {
+                console.error('Ошибка загрузки:', error);
+                showMessage('Ошибка загрузки файла', 'error');
+                uploadProgress.style.display = 'none';
+            }
+        }
+        
+        async function loadAttachments() {
+            try {
+                const attachmentsRef = database.ref('tickets/' + currentTicketId + '/attachments');
+                attachmentsRef.on('value', (snapshot) => {
+                    const attachments = snapshot.val();
+                    const attachmentsList = document.getElementById('attachmentsList');
+                    
+                    if (!attachments) {
+                        attachmentsList.innerHTML = '<p style="color: #666; font-size: 0.9rem;">Нет файлов</p>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    Object.values(attachments).forEach(attachment => {
+                        const size = (attachment.size / 1024).toFixed(1);
+                        html += `
+                            <div style="margin-bottom: 0.5rem; padding: 0.5rem; background: #f8f9fa; border-radius: 5px;">
+                                <a href="${attachment.url}" target="_blank" style="color: #667eea; text-decoration: none; display: block;">
+                                    <i class="fas fa-paperclip"></i>
+                                    ${attachment.name}
+                                </a>
+                                <small style="color: #666;">${size} KB</small>
+                            </div>
+                        `;
+                    });
+                    
+                    attachmentsList.innerHTML = html;
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки файлов:', error);
+            }
+        }
+        
+        async function loadAgentInfo(agentId) {
+            try {
+                const agentRef = database.ref('users/' + agentId);
+                agentRef.once('value', (snapshot) => {
+                    const agent = snapshot.val();
+                    if (agent) {
+                        document.getElementById('ticketAgent').innerHTML = `
+                            <i class="fas fa-user-tie"></i>
+                            ${agent.username || agent.email}
+                        `;
+                    }
+                });
+            } catch (error) {
+                console.error('Ошибка загрузки информации о специалисте:', error);
+            }
+        }
+        
+        async function closeTicket() {
+            if (!confirm('Вы уверены, что хотите закрыть заявку?')) {
+                return;
+            }
+            
+            try {
+                await database.ref('tickets/' + currentTicketId + '/status').set('closed');
+                await database.ref('tickets/' + currentTicketId + '/updatedAt').set(Date.now());
+                
+                showMessage('Заявка закрыта', 'success');
+                document.getElementById('closeBtn').style.display = 'none';
+                
+            } catch (error) {
+                console.error('Ошибка закрытия заявки:', error);
+                showMessage('Ошибка закрытия заявки', 'error');
+            }
+        }
+        
+        function logout() {
+            auth.signOut().then(() => {
+                window.location.href = 'index.html';
+            });
+        }
+        
+        function getPriorityText(priority) {
+            const priorities = {
+                'low': 'Низкий',
+                'medium': 'Средний',
+                'high': 'Высокий',
+                'critical': 'Критический'
+            };
+            return priorities[priority] || priority;
+        }
+        
+        function getCategoryText(category) {
+            const categories = {
+                'technical': 'Техническая',
+                'payment': 'Оплата',
+                'gameplay': 'Геймплей',
+                'account': 'Аккаунт',
+                'bug': 'Ошибка',
+                'suggestion': 'Предложение',
+                'other': 'Другое'
+            };
+            return categories[category] || category;
+        }
+        
+        function getStatusText(status) {
+            const statuses = {
+                'new': 'Новая',
+                'in-progress': 'В работе',
+                'solved': 'Решено',
+                'closed': 'Закрыто'
+            };
+            return statuses[status] || status;
+        }
+    </script>
+</body>
+</html>

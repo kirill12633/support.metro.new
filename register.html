@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация - Метро New</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js?render=6Ld9uw0sAAAAAMTSxQ9Vxd0LhEcwweHGF-DWdZIo"></script>
+</head>
+<body>
+    <header>
+        <div class="container header-container">
+            <a href="index.html" class="logo">
+                <i class="fas fa-subway"></i>
+                Метро New
+            </a>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="auth-container" id="registerFormContainer">
+            <h2>
+                <i class="fas fa-user-plus"></i>
+                Регистрация
+            </h2>
+            
+            <form id="registerForm">
+                <div class="form-group">
+                    <label for="email">
+                        <i class="fas fa-envelope"></i>
+                        Email
+                    </label>
+                    <input type="email" id="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">
+                        <i class="fas fa-lock"></i>
+                        Пароль
+                    </label>
+                    <input type="password" id="password" required minlength="6">
+                    <small style="color: #666; font-size: 0.875rem;">
+                        Минимум 6 символов
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="confirmPassword">
+                        <i class="fas fa-lock"></i>
+                        Подтвердите пароль
+                    </label>
+                    <input type="password" id="confirmPassword" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="username">
+                        <i class="fas fa-user"></i>
+                        Имя пользователя (опционально)
+                    </label>
+                    <input type="text" id="username" placeholder="Будет отображаться в чате">
+                </div>
+                
+                <div class="form-group">
+                    <button type="submit" class="btn btn-success" style="width: 100%; padding: 0.75rem;">
+                        <i class="fas fa-user-plus"></i>
+                        Зарегистрироваться
+                    </button>
+                </div>
+                
+                <div style="text-align: center; margin-top: 1rem;">
+                    <a href="login.html" style="color: #667eea; text-decoration: none;">
+                        <i class="fas fa-sign-in-alt"></i>
+                        Уже есть аккаунт? Войдите
+                    </a>
+                </div>
+                
+                <div style="text-align: center; margin-top: 0.5rem;">
+                    <a href="index.html" style="color: #6c757d; text-decoration: none;">
+                        <i class="fas fa-arrow-left"></i>
+                        На главную
+                    </a>
+                </div>
+            </form>
+        </div>
+        
+        <!-- Контейнер для сообщения о подтверждении -->
+        <div class="auth-container" id="verificationMessage" style="display: none;">
+            <h2 style="color: #28a745;">
+                <i class="fas fa-check-circle"></i>
+                Регистрация успешна!
+            </h2>
+            <p>На ваш email отправлено письмо с подтверждением.</p>
+            <p>Пожалуйста, проверьте почту и перейдите по ссылке в письме.</p>
+            <p>После подтверждения вы сможете войти в систему.</p>
+            
+            <div style="margin-top: 2rem;">
+                <button onclick="resendVerificationEmail()" class="btn btn-secondary" style="width: 100%; margin-bottom: 0.5rem;">
+                    <i class="fas fa-redo"></i>
+                    Отправить письмо повторно
+                </button>
+                <a href="login.html" class="btn" style="width: 100%;">
+                    <i class="fas fa-sign-in-alt"></i>
+                    Перейти ко входу
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const username = document.getElementById('username').value;
+            const submitBtn = this.querySelector('button');
+            
+            // Проверка паролей
+            if (password !== confirmPassword) {
+                showMessage('Пароли не совпадают', 'error');
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Регистрация...';
+            
+            try {
+                // reCAPTCHA v3
+                const token = await grecaptcha.execute('6Ld9uw0sAAAAAMTSxQ9Vxd0LhEcwweHGF-DWdZIo', {action: 'register'});
+                
+                // Регистрация в Firebase
+                const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+                const user = userCredential.user;
+                
+                // Отправка email подтверждения
+                await user.sendEmailVerification({
+                    url: window.location.origin + '/login.html',
+                    handleCodeInApp: true
+                });
+                
+                // Создание профиля пользователя
+                await database.ref('users/' + user.uid).set({
+                    email: email,
+                    username: username || email.split('@')[0],
+                    emailVerified: false,
+                    createdAt: firebase.database.ServerValue.TIMESTAMP,
+                    lastSeen: firebase.database.ServerValue.TIMESTAMP,
+                    ticketsCount: 0,
+                    role: 'user'
+                });
+                
+                // Показываем сообщение о подтверждении
+                document.getElementById('registerFormContainer').style.display = 'none';
+                document.getElementById('verificationMessage').style.display = 'block';
+                
+                showMessage('Письмо с подтверждением отправлено на ваш email', 'success');
+                
+            } catch (error) {
+                console.error('Ошибка регистрации:', error);
+                let message = 'Ошибка регистрации';
+                
+                switch(error.code) {
+                    case 'auth/email-already-in-use':
+                        message = 'Email уже используется';
+                        break;
+                    case 'auth/invalid-email':
+                        message = 'Неверный email';
+                        break;
+                    case 'auth/weak-password':
+                        message = 'Слабый пароль';
+                        break;
+                    case 'auth/operation-not-allowed':
+                        message = 'Регистрация временно недоступна';
+                        break;
+                }
+                
+                showMessage(message, 'error');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Зарегистрироваться';
+            }
+        });
+        
+        async function resendVerificationEmail() {
+            const user = auth.currentUser;
+            if (!user) {
+                showMessage('Пользователь не найден', 'error');
+                return;
+            }
+            
+            try {
+                await user.sendEmailVerification({
+                    url: window.location.origin + '/login.html'
+                });
+                showMessage('Письмо отправлено повторно', 'success');
+            } catch (error) {
+                console.error('Ошибка отправки письма:', error);
+                showMessage('Ошибка отправки письма', 'error');
+            }
+        }
+    </script>
+</body>
+</html>

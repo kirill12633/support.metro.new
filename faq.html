@@ -3,391 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FAQ - Метро New</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Техническая поддержка — Метро New</title>
+    <!-- Автоматический редирект через 5 секунд -->
+    <meta http-equiv="refresh" content="5; url=https://kirill12633.github.io/Metro.New.Official/ru/contact/">
     <style>
-        :root {
-            --primary: #0066CC;
-            --primary-dark: #0052a3;
-            --secondary: #FFD700;
-            --dark: #1A1A1A;
-            --light: #F8F9FA;
-            --gray: #6C757D;
-            --success: #28A745;
-        }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
         body {
-            font-family: 'Montserrat', sans-serif;
-            background-color: var(--light);
-            color: var(--dark);
-            line-height: 1.6;
-        }
-        
-        header {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            padding: 1rem 0;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
-        
-        .container {
-            width: 90%;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        
-        nav {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #121214;
+            color: #ffffff;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.5rem;
-            font-weight: 700;
-        }
-        
-        .logo-icon {
-            width: 30px;
-            height: 30px;
-            background-color: var(--secondary);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
             justify-content: center;
-            color: var(--dark);
-            font-weight: bold;
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 1.5rem;
-        }
-        
-        .nav-links a {
-            color: white;
-            text-decoration: none;
-            font-weight: 500;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-        
-        .nav-links a:hover {
-            background-color: rgba(255, 255, 255, 0.15);
-        }
-        
-        .nav-links a::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 2px;
-            background-color: var(--secondary);
-            transition: width 0.3s ease;
-        }
-        
-        .nav-links a:hover::after {
-            width: 70%;
-        }
-        
-        main {
-            padding: 2rem 0;
-            min-height: calc(100vh - 150px);
-        }
-        
-        .page-header {
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .page-header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-            color: var(--primary);
-        }
-        
-        .page-header p {
-            color: var(--gray);
-            font-size: 1.1rem;
-        }
-        
-        .faq-container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        
-        .faq-item {
-            background-color: white;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        
-        .faq-question {
-            padding: 1.25rem 1.5rem;
-            display: flex;
-            justify-content: space-between;
             align-items: center;
-            cursor: pointer;
-            font-weight: 600;
-            transition: background-color 0.3s;
-        }
-        
-        .faq-question:hover {
-            background-color: rgba(0, 102, 204, 0.05);
-        }
-        
-        .faq-question::after {
-            content: '+';
-            font-size: 1.5rem;
-            color: var(--primary);
-            transition: transform 0.3s;
-        }
-        
-        .faq-item.active .faq-question::after {
-            transform: rotate(45deg);
-        }
-        
-        .faq-answer {
-            padding: 0 1.5rem;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.3s ease, padding 0.3s ease;
-        }
-        
-        .faq-item.active .faq-answer {
-            padding: 0 1.5rem 1.5rem;
-            max-height: 500px;
-        }
-        
-        .contact-support {
-            background-color: rgba(0, 102, 204, 0.1);
-            border-left: 4px solid var(--primary);
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin-top: 3rem;
+            height: 100vh;
+            margin: 0;
             text-align: center;
         }
-        
-        .contact-support h3 {
-            color: var(--primary);
-            margin-bottom: 1rem;
+        .container {
+            max-width: 500px;
+            padding: 40px 20px;
+            background: #1a1a1e;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            border: 1px solid #2d2d34;
         }
-        
+        .icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 12px;
+            color: #f5f5f7;
+        }
+        p {
+            font-size: 16px;
+            color: #a1a1aa;
+            line-height: 1.5;
+            margin-bottom: 24px;
+        }
         .btn {
             display: inline-block;
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 0.75rem 2rem;
+            background-color: #3b82f6;
+            color: #ffffff;
+            text-decoration: none;
+            padding: 12px 24px;
             border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
             font-weight: 600;
-            transition: all 0.3s ease;
-            text-align: center;
-            text-decoration: none;
+            transition: background-color 0.2s;
         }
-        
         .btn:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background-color: #2563eb;
         }
-        
-        footer {
-            background-color: var(--dark);
-            color: white;
-            padding: 2rem 0;
-            text-align: center;
-        }
-        
-        .footer-links {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
-        }
-        
-        .footer-links a {
-            color: white;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-        
-        .footer-links a:hover {
-            color: var(--secondary);
-        }
-        
-        .copyright {
-            color: var(--gray);
-            font-size: 0.9rem;
-        }
-        
-        @media (max-width: 768px) {
-            nav {
-                flex-direction: column;
-                gap: 1rem;
-            }
-            
-            .nav-links {
-                flex-wrap: wrap;
-                justify-content: center;
-            }
-            
-            .page-header h1 {
-                font-size: 2rem;
-            }
+        .timer {
+            font-size: 14px;
+            color: #71717a;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <nav>
-                <div class="logo">
-                    <span class="logo-icon"></span>
-                    <span>Метро New</span>
-                </div>
-                <div class="nav-links">
-                    <a href="index.html">Главная</a>
-                    <a href="support.html">Поддержка</a>
-                    <a href="news.html">Новости</a>
-                    <a href="faq.html">FAQ</a>
-                </div>
-            </nav>
-        </div>
-    </header>
 
-    <main class="container">
-        <div class="page-header">
-            <h1>Часто задаваемые вопросы</h1>
-            <p>Найдите ответы на самые популярные вопросы о сервисе Метро New</p>
-        </div>
+    <div class="container">
+        <div class="icon">🚇</div>
+        <h1>Страница поддержки закрыта</h1>
+        <p>Эта страница больше не поддерживается. Все вопросы и обращения теперь принимаются на официальной странице обратной связи.</p>
         
-        <div class="faq-container">
-            <div class="faq-item">
-                <div class="faq-question">Что такое ЧСП (Чёрный список проекта)?</div>
-                <div class="faq-answer">
-                    <p>ЧСП Расшифровка Чёрный список проекта, в который попадают участники, нарушившие правила проекта по решению руководства.</p>
-                </div>
-            </div>
-            
-            <div class="faq-item">
-                <div class="faq-question">Что такое Политика конфиденциальности?</div>
-                <div class="faq-answer">
-                    <p>Это документ, где написано, какие данные проект/компания собирает о пользователях (например, почта, ник, IP-адрес) и как эти данные используются и защищаются.
-
-Такой документ тоже обязательно должен быть у каждого сайта/проекта.</p>
-                </div>
-            </div>
-            
-            <div class="faq-item">
-                <div class="faq-question">Что такое Пользовательское соглашение?.</div>
-                <div class="faq-answer">
-                    <p>Это правила, по которым человек может пользоваться сайтом, игрой, приложением или ботом. Там описано: что можно, что нельзя, обязанности пользователя и создателя проекта.
-
-У каждого сайта/проекта обычно есть своё пользовательское соглашение.</p>
-                </div>
-            </div>
-            
-            <div class="faq-item">
-                <div class="faq-question">Наши официальные соцсети?</div>
-                <div class="faq-answer">
-                    <p>Ниже представлены все наши официальные сети на данный момент:
-
-:Roblox~2: - https://www.roblox.com/groups/34820737/RP-NEW#!/about
-
-:Discord~1: -  https://discord.com/invite/WjGZBs3HMX
-
-:Telegram: - https://t.me/metronewroblox
-
- :YouTube~1: - https://www.youtube.com/@Metro-RP-NEW-Roblox
-
- :Google_Sites: - https://sites.google.com/view/metro-new-roblox / https://kirill12633.github.io/Metro.New.Official/
-</p>
-                </div>
-            </div>
-            
-            <div class="faq-item">
-                <div class="faq-question">Скоро...</div>
-                <div class="faq-answer">
-                    <p>Скоро...</p>
-                </div>
-            </div>
-            
-            <div class="faq-item">
-                <div class="faq-question">Скоро...</div>
-                <div class="faq-answer">
-                    <p>Скоро...</p>
-                </div>
-            </div>
-            
-            <div class="faq-item">
-                <div class="faq-question">Скоро...</div>
-                <div class="faq-answer">
-                    <p>Скоро...</p>
-                </div>
-            </div>
-            
-            <div class="contact-support">
-                <h3>Не нашли ответ на свой вопрос?</h3>
-                <p>Наша служба поддержки всегда готова помочь вам</p>
-                <a href="support.html" class="btn">Обратиться в поддержку</a>
-            </div>
-        </div>
-    </main>
-
-    <footer>
-        <div class="container">
-            <div class="footer-links">
-                <a href="https://discord.com/invite/WjGZBs3HMX">О нас</a>
-                <a href="https://discord.com/invite/WjGZBs3HMX">Контакты</a>
-                <a href="https://docs.google.com/document/d/1Y_3cs7qEcSehVIirIPSSqJQjxOco5ixipMF6zXSSO_I/edit?usp=sharing">Политика конфиденциальности</a>
-                <a href="https://docs.google.com/document/d/1bbDwsFuSFou-qqcIvhb44mton1z2TY32F9SqcYnMcyI/edit?usp=sharing">Пользовательское соглашение</a>
-            </div>
-            <p class="copyright">© 2025 Метро New. Все права защищены.</p>
-        </div>
-    </footer>
+        <a href="https://kirill12633.github.io/Metro.New.Official/ru/contact/" class="btn">Перейти к контактам</a>
+        
+        <div class="timer">Вы будете автоматически перенаправлены через <span id="countdown">5</span> сек...</div>
+    </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const faqItems = document.querySelectorAll('.faq-item');
-            
-            faqItems.forEach(item => {
-                const question = item.querySelector('.faq-question');
-                
-                question.addEventListener('click', () => {
-                    // Закрываем все открытые вопросы
-                    faqItems.forEach(otherItem => {
-                        if (otherItem !== item && otherItem.classList.contains('active')) {
-                            otherItem.classList.remove('active');
-                        }
-                    });
-                    
-                    // Открываем/закрываем текущий вопрос
-                    item.classList.toggle('active');
-                });
-            });
-        });
+        // Скрипт визуального отсчета секунд
+        let seconds = 5;
+        const countdownEl = document.getElementById('countdown');
+        
+        const interval = setInterval(() => {
+            seconds--;
+            countdownEl.textContent = seconds;
+            if (seconds <= 0) {
+                clearInterval(interval);
+            }
+        }, 1000);
     </script>
 </body>
 </html>
